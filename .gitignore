@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+
+# Database (will be created at runtime in user data folder)
+database/*.db
+
+# User data
+attachments/*
+!attachments/.gitkeep
+emails/*
+!emails/.gitkeep
+backup/*
+!backup/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Preview files (for screenshot generation)
+docs/preview-*.html
