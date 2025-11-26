@@ -29,3 +29,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Preview files (for screenshot generation)
+docs/preview-*.html

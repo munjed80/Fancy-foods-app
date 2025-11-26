@@ -120,6 +120,38 @@ The email module supports Hotmail/Outlook SMTP:
 
 Configure your email credentials in the Email module settings.
 
+## Screenshots
+
+### Dashboard / Workflow
+The main dashboard shows daily workflow checklist, statistics, pending orders, and open broker deals.
+
+![Dashboard](docs/screenshots/01-dashboard.png)
+
+### Products Management
+Full CRUD for product inventory with categories (nuts, seeds, mixed, roasted), units, and pricing.
+
+![Products](docs/screenshots/02-products.png)
+
+### Clients Management
+Manage shop owners and wholesalers with contact information (phone, WhatsApp, city).
+
+![Clients](docs/screenshots/03-clients.png)
+
+### Broker Deals
+Track brokerage deals for bulk food items (rice, starch, coffee, spices) with attachment support.
+
+![Broker Deals](docs/screenshots/04-broker-deals.png)
+
+### Orders Management
+Create and manage sales orders with multiple line items, auto-calculated totals, and status tracking.
+
+![Orders](docs/screenshots/05-orders.png)
+
+### Email Writer
+Built-in email composer with SMTP support, templates, and sent email archive.
+
+![Email](docs/screenshots/06-email.png)
+
 ## License
 
 MIT
