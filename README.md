@@ -76,7 +76,7 @@ npm run build
 
 The output Windows installer will be located at:
 ```
-dist/FancyFoods Manager Setup <version>.exe
+dist/FancyFoods Manager Setup 1.0.0.exe
 ```
 
 **Alternative:** You can also use the Windows-specific build command:
@@ -99,8 +99,8 @@ npm run build
 ### Output Location
 
 Built installers will be placed in the `dist/` folder:
-- Windows: `dist/FancyFoods Manager Setup <version>.exe`
-- macOS: `dist/FancyFoods Manager-<version>.dmg`
+- Windows: `dist/FancyFoods Manager Setup 1.0.0.exe`
+- macOS: `dist/FancyFoods Manager-1.0.0.dmg`
 
 ### Custom Icon (Optional)
 
