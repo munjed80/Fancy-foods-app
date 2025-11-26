@@ -53,46 +53,57 @@ npm start
 NODE_ENV=development npm start
 ```
 
-## Building Installers
+## Build on Windows
 
 ### Prerequisites
 
-- **Node.js LTS** (Node 20.x or later recommended) installed on your system
-- **npm** (comes with Node.js)
-- For Windows builds: Windows 10/11 or Windows Server 2019+
-- For macOS builds: macOS 10.15+ with Xcode Command Line Tools
+1. **Node.js LTS (v20.x)** - Download from https://nodejs.org/
+2. **Visual Studio Build Tools** with "Desktop development with C++" workload installed
+   - Download from https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   - During installation, select "Desktop development with C++"
 
-### Build as Windows EXE
-
-On a Windows machine with Node.js installed, run the following commands:
+### Build Steps
 
 ```bash
-# Step 1: Install dependencies (rebuilds native modules for Electron)
+# Step 1: Install dependencies (automatically rebuilds native modules for Electron)
 npm install
 
 # Step 2: Build the Windows installer
 npm run build
 ```
 
-The output Windows installer will be located at:
+The installer will be located at:
 ```
 dist/FancyFoods Manager Setup 1.0.0.exe
 ```
 
-**Alternative:** You can also use the Windows-specific build command:
+**Alternative:** Use the Windows-specific build command:
 ```bash
 npm run build:win
 ```
 
+---
+
+## Building Installers (All Platforms)
+
+### Prerequisites
+
+- **Node.js LTS** (Node 20.x) installed on your system
+- **npm** (comes with Node.js)
+- For Windows builds: Windows 10/11 with Visual Studio Build Tools (Desktop development with C++)
+- For macOS builds: macOS 10.15+ with Xcode Command Line Tools
+
 ### Build as macOS DMG
 
 ```bash
+npm install
 npm run build:mac
 ```
 
-### Build for All Platforms
+### Build for Current Platform
 
 ```bash
+npm install
 npm run build
 ```
 
