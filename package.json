@@ -7,8 +7,8 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "postinstall": "electron-rebuild",
-    "rebuild": "electron-rebuild",
+    "postinstall": "npx @electron/rebuild",
+    "rebuild": "npx @electron/rebuild",
     "build": "electron-builder",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac"
@@ -23,7 +23,7 @@
   "devDependencies": {
     "electron": "^39.2.3",
     "electron-builder": "^24.9.1",
-    "electron-rebuild": "^3.2.9"
+    "@electron/rebuild": "^3.6.0"
   },
   "build": {
     "appId": "com.fancyfoods.manager",
@@ -50,12 +50,10 @@
       }
     ],
     "win": {
-      "target": "nsis",
-      "icon": "renderer/assets/icon.ico"
+      "target": "nsis"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "renderer/assets/icon.icns"
+      "target": "dmg"
     },
     "nsis": {
       "oneClick": false,
