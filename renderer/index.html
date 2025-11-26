@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>FancyFoods Manager</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🥜 FancyFoods</h2>
+                <p class="text-muted">Manager</p>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-module="workflow">
+                        <span class="nav-icon">📋</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="products">
+                        <span class="nav-icon">📦</span>
+                        <span>Products</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="clients">
+                        <span class="nav-icon">👥</span>
+                        <span>Clients</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="broker">
+                        <span class="nav-icon">🤝</span>
+                        <span>Broker Deals</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="orders">
+                        <span class="nav-icon">🛒</span>
+                        <span>Orders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="email">
+                        <span class="nav-icon">✉️</span>
+                        <span>Email</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="btn btn-outline-primary btn-sm w-100 mb-2" id="btn-export-backup">
+                    💾 Export Backup
+                </button>
+                <button class="btn btn-outline-secondary btn-sm w-100" id="btn-import-backup">
+                    📥 Import Backup
+                </button>
+                <p class="version-text mt-2" id="app-version"></p>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard / Workflow Module -->
+            <section id="module-workflow" class="module-section active">
+                <div class="module-header">
+                    <h1>📋 Daily Workflow Dashboard</h1>
+                </div>
+                <div class="module-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">📦</div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="stat-products">0</span>
+                                    <span class="stat-label">Total Products</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="stat-clients">0</span>
+                                    <span class="stat-label">Total Clients</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card warning">
+                                <div class="stat-icon">🛒</div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="stat-pending-orders">0</span>
+                                    <span class="stat-label">Pending Orders</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card info">
+                                <div class="stat-icon">🤝</div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="stat-open-deals">0</span>
+                                    <span class="stat-label">Open Deals</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>✅ Daily Checklist</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="checklist" id="daily-checklist">
+                                        <div class="checklist-item">
+                                            <input type="checkbox" id="check1">
+                                            <label for="check1">Step 1: Review new orders</label>
+                                        </div>
+                                        <div class="checklist-item">
+                                            <input type="checkbox" id="check2">
+                                            <label for="check2">Step 2: Check inventory items low stock</label>
+                                        </div>
+                                        <div class="checklist-item">
+                                            <input type="checkbox" id="check3">
+                                            <label for="check3">Step 3: Pending brokerage deals</label>
+                                        </div>
+                                        <div class="checklist-item">
+                                            <input type="checkbox" id="check4">
+                                            <label for="check4">Step 4: Prepare shipments</label>
+                                        </div>
+                                        <div class="checklist-item">
+                                            <input type="checkbox" id="check5">
+                                            <label for="check5">Step 5: Contact traders</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🛒 Recent Pending Orders</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-orders-list" class="list-group"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>🤝 Open Broker Deals</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="open-deals-list" class="list-group"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Module -->
+            <section id="module-products" class="module-section">
+                <div class="module-header">
+                    <h1>📦 Products Management</h1>
+                    <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+                </div>
+                <div class="module-body">
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="products-search" placeholder="Search products by name...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="products-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Unit</th>
+                                    <th>Price</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clients Module -->
+            <section id="module-clients" class="module-section">
+                <div class="module-header">
+                    <h1>👥 Clients Management</h1>
+                    <button class="btn btn-primary" id="btn-add-client">+ Add Client</button>
+                </div>
+                <div class="module-body">
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="clients-search" placeholder="Search clients by name or phone...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>WhatsApp</th>
+                                    <th>City</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Broker Deals Module -->
+            <section id="module-broker" class="module-section">
+                <div class="module-header">
+                    <h1>🤝 Broker Deals</h1>
+                    <button class="btn btn-primary" id="btn-add-deal">+ Add Deal</button>
+                </div>
+                <div class="module-body">
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="broker-search" placeholder="Search deals by trader or product...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="broker-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Trader</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price/Ton</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Module -->
+            <section id="module-orders" class="module-section">
+                <div class="module-header">
+                    <h1>🛒 Orders Management</h1>
+                    <button class="btn btn-primary" id="btn-add-order">+ New Order</button>
+                </div>
+                <div class="module-body">
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="orders-search" placeholder="Search orders by client name...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Client</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Email Module -->
+            <section id="module-email" class="module-section">
+                <div class="module-header">
+                    <h1>✉️ Email Writer</h1>
+                    <button class="btn btn-secondary" id="btn-email-settings">⚙️ SMTP Settings</button>
+                </div>
+                <div class="module-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Compose Email</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">To:</label>
+                                        <input type="email" class="form-control" id="email-to" placeholder="recipient@example.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Subject:</label>
+                                        <input type="text" class="form-control" id="email-subject" placeholder="Email subject">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Body:</label>
+                                        <textarea class="form-control" id="email-body" rows="8" placeholder="Type your email here..."></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary" id="btn-send-email">📤 Send Email</button>
+                                        <button class="btn btn-outline-secondary" id="btn-save-template">💾 Save as Template</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>📁 Templates</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="email-templates-list" class="list-group"></div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>📬 Sent Emails</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="sent-emails-list" class="list-group" style="max-height: 200px; overflow-y: auto;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="product-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="product-modal-title">Add Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="product-form">
+                        <input type="hidden" id="product-id">
+                        <div class="mb-3">
+                            <label class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="product-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="product-category">
+                                <option value="nuts">Nuts</option>
+                                <option value="seeds">Seeds</option>
+                                <option value="mixed">Mixed</option>
+                                <option value="roasted">Roasted</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unit</label>
+                            <select class="form-select" id="product-unit">
+                                <option value="kg">Kilogram (kg)</option>
+                                <option value="box">Box</option>
+                                <option value="bag">Bag</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" class="form-control" id="product-price" step="0.01" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="product-notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-product">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Modal -->
+    <div class="modal fade" id="client-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="client-modal-title">Add Client</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="client-form">
+                        <input type="hidden" id="client-id">
+                        <div class="mb-3">
+                            <label class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="client-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="client-phone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp</label>
+                            <input type="text" class="form-control" id="client-whatsapp">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" id="client-city">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="client-notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-client">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Broker Deal Modal -->
+    <div class="modal fade" id="deal-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deal-modal-title">Add Broker Deal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deal-form">
+                        <input type="hidden" id="deal-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Trader Name *</label>
+                                <input type="text" class="form-control" id="deal-trader" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Product *</label>
+                                <input type="text" class="form-control" id="deal-product" required placeholder="e.g., Rice, Starch, Coffee">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Quantity (tons)</label>
+                                <input type="number" class="form-control" id="deal-quantity" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Price per Ton</label>
+                                <input type="number" class="form-control" id="deal-price" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="deal-status">
+                                    <option value="open">Open</option>
+                                    <option value="closed">Closed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" class="form-control" id="deal-supplier">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="deal-notes" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3" id="attachments-section" style="display: none;">
+                            <label class="form-label">Attachments</label>
+                            <div id="deal-attachments" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-attachment">+ Add Attachment</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-deal">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal fade" id="order-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="order-modal-title">New Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="order-form">
+                        <input type="hidden" id="order-id">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Client *</label>
+                                <select class="form-select" id="order-client" required>
+                                    <option value="">Select client...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-control" id="order-date">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="order-status">
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Order Items</label>
+                            <table class="table table-sm" id="order-items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th width="100">Quantity</th>
+                                        <th width="120">Price</th>
+                                        <th width="120">Subtotal</th>
+                                        <th width="50"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="order-items-body"></tbody>
+                            </table>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-order-item">+ Add Item</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" id="order-notes" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total</label>
+                                <div class="h3 text-primary" id="order-total">$0.00</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-order">Save Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SMTP Settings Modal -->
+    <div class="modal fade" id="smtp-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">SMTP Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="smtp-form">
+                        <div class="mb-3">
+                            <label class="form-label">SMTP Host</label>
+                            <input type="text" class="form-control" id="smtp-host" value="smtp-mail.outlook.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Port</label>
+                            <input type="number" class="form-control" id="smtp-port" value="587">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="smtp-secure">
+                            <label class="form-check-label" for="smtp-secure">Use SSL/TLS</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email (Username)</label>
+                            <input type="email" class="form-control" id="smtp-user" placeholder="your-email@outlook.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="smtp-pass">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-smtp">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Template Modal -->
+    <div class="modal fade" id="template-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Save Email Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="template-form">
+                        <input type="hidden" id="template-id">
+                        <div class="mb-3">
+                            <label class="form-label">Template Name *</label>
+                            <input type="text" class="form-control" id="template-name" required placeholder="e.g., Price Inquiry">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save-template">Save Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="app-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message"></div>
+        </div>
+    </div>
+
+    <script src="bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

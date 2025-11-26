@@ -1,8 +1,63 @@
 {
   "name": "fancyfoods-app",
   "version": "1.0.0",
+  "description": "FancyFoods Manager - Desktop app for managing wholesale nuts and seeds business",
   "main": "main.js",
+  "author": "Fancy Foods",
+  "license": "MIT",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac"
+  },
+  "dependencies": {
+    "archiver": "^6.0.1",
+    "better-sqlite3": "^9.4.3",
+    "bootstrap": "^5.3.2",
+    "extract-zip": "^2.0.1",
+    "nodemailer": "^6.9.9"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "electron-rebuild": "^3.2.9"
+  },
+  "build": {
+    "appId": "com.fancyfoods.manager",
+    "productName": "FancyFoods Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "database/**/*",
+      "attachments/**/*",
+      "emails/**/*",
+      "backup/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "database/",
+        "to": "database/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "renderer/assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "renderer/assets/icon.icns"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
