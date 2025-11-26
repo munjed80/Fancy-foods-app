@@ -155,3 +155,40 @@ Built-in email composer with SMTP support, templates, and sent email archive.
 ## License
 
 MIT
+
+## Troubleshooting
+
+### Native Module Errors
+
+If you encounter errors with `better-sqlite3` or other native modules:
+
+```bash
+# Rebuild native modules for Electron
+npm run rebuild
+```
+
+### Database Location
+
+The SQLite database is stored in the user data directory:
+- **Windows:** `%APPDATA%/fancyfoods-app/database/fancyfoods.db`
+- **macOS:** `~/Library/Application Support/fancyfoods-app/database/fancyfoods.db`
+- **Linux:** `~/.config/fancyfoods-app/database/fancyfoods.db`
+
+### Backup Files
+
+Backup files are exported as ZIP archives containing:
+- Database file (`database/fancyfoods.db`)
+- Attachments folder
+- Sent emails folder
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
+
+## Support
+
+For issues and feature requests, please open an issue on GitHub.
