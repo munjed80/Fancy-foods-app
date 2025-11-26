@@ -55,25 +55,66 @@ NODE_ENV=development npm start
 
 ## Building Installers
 
-### Windows (.exe)
+### Prerequisites
 
+- **Node.js LTS** (Node 20.x or later recommended) installed on your system
+- **npm** (comes with Node.js)
+- For Windows builds: Windows 10/11 or Windows Server 2019+
+- For macOS builds: macOS 10.15+ with Xcode Command Line Tools
+
+### Build as Windows EXE
+
+On a Windows machine with Node.js installed, run the following commands:
+
+```bash
+# Step 1: Install dependencies (rebuilds native modules for Electron)
+npm install
+
+# Step 2: Build the Windows installer
+npm run build
+```
+
+The output Windows installer will be located at:
+```
+dist/FancyFoods Manager Setup <version>.exe
+```
+
+**Alternative:** You can also use the Windows-specific build command:
 ```bash
 npm run build:win
 ```
 
-### macOS (.dmg)
+### Build as macOS DMG
 
 ```bash
 npm run build:mac
 ```
 
-### All platforms
+### Build for All Platforms
 
 ```bash
 npm run build
 ```
 
-Built installers will be placed in the `dist/` folder.
+### Output Location
+
+Built installers will be placed in the `dist/` folder:
+- Windows: `dist/FancyFoods Manager Setup <version>.exe`
+- macOS: `dist/FancyFoods Manager-<version>.dmg`
+
+### Custom Icon (Optional)
+
+To add a custom application icon:
+1. Create a 256x256 pixel (or larger) PNG image
+2. Convert it to ICO format (for Windows) using an online tool or ImageMagick
+3. Save as `renderer/assets/icon.ico`
+4. Update `package.json` build config:
+   ```json
+   "win": {
+     "target": "nsis",
+     "icon": "renderer/assets/icon.ico"
+   }
+   ```
 
 ## Folder Structure
 

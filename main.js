@@ -130,7 +130,8 @@ function initializeDatabase() {
 }
 
 function createWindow() {
-    mainWindow = new BrowserWindow({
+    const iconPath = path.join(__dirname, 'renderer/assets/icon.png');
+    const windowOptions = {
         width: 1400,
         height: 900,
         minWidth: 1200,
@@ -140,9 +141,15 @@ function createWindow() {
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js')
         },
-        icon: path.join(__dirname, 'renderer/assets/icon.png'),
         title: 'FancyFoods Manager'
-    });
+    };
+    
+    // Only set icon if file exists
+    if (fs.existsSync(iconPath)) {
+        windowOptions.icon = iconPath;
+    }
+    
+    mainWindow = new BrowserWindow(windowOptions);
 
     mainWindow.loadFile('renderer/index.html');
     
