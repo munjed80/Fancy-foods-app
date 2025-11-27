@@ -112,13 +112,23 @@ contextBridge.exposeInMainWorld('api', {
         get: () => ipcRenderer.invoke('settings:get'),
         save: (settings) => ipcRenderer.invoke('settings:save', settings),
         getLanguage: () => ipcRenderer.invoke('settings:getLanguage'),
-        setLanguage: (lang) => ipcRenderer.invoke('settings:setLanguage', lang)
+        setLanguage: (lang) => ipcRenderer.invoke('settings:setLanguage', lang),
+        getCurrency: () => ipcRenderer.invoke('settings:getCurrency'),
+        setCurrency: (currency) => ipcRenderer.invoke('settings:setCurrency', currency)
     },
     
-    // Update System
+    // Update System (Simple - just opens browser)
     update: {
         check: () => ipcRenderer.invoke('update:check'),
-        download: (url) => ipcRenderer.invoke('update:download', url)
+        openReleases: () => ipcRenderer.invoke('update:openReleases')
+    },
+    
+    // Todo List
+    todo: {
+        getAll: () => ipcRenderer.invoke('todo:getAll'),
+        add: (text) => ipcRenderer.invoke('todo:add', text),
+        toggle: (id) => ipcRenderer.invoke('todo:toggle', id),
+        delete: (id) => ipcRenderer.invoke('todo:delete', id)
     },
     
     // Data Sync

@@ -1,246 +1,125 @@
-# FancyFoods Manager
+# السيد الدولية - مدير الأعمال
+# Alsayed International - Business Manager
 
-A full local desktop application for Windows and macOS built with Electron.js + Node.js + SQLite.
+تطبيق سطح مكتب محلي لإدارة تجارة المكسرات والسناكس بالجملة.
 
-**Company:** Fancy Foods  
-**Type:** Local-only (NO internet required except for email sending)
+A local desktop application for managing wholesale nuts and snacks trading business.
 
-## Purpose
+**الشركة / Company:** السيد الدولية / Alsayed International  
+**النوع / Type:** تطبيق محلي - لا يتطلب اتصال بالإنترنت إلا لإرسال البريد الإلكتروني
 
-This app manages the business operations of a wholesale nuts and seeds company. The user acts as both a wholesaler and a broker for other food products like rice, starch, coffee, and spices.
+---
 
-## Features
+## التثبيت / Installation
 
-### Modules
+### المتطلبات / Prerequisites
 
-1. **Products Module** - Add/Edit/Delete products with categories (nuts, seeds, mixed, roasted), units, and pricing
-2. **Clients Module** - Store shop owners and wholesalers with contact information
-3. **Broker Deals Module** - Manage brokerage deals for bulk food items with attachment support
-4. **Orders Module** - Create and manage sales orders for local shops
-5. **Email Writer Module** - Built-in email composer with SMTP support for Hotmail/Outlook
-6. **Workflow Module** - Daily routine checklist and dashboard
+- Node.js 20.x أو أحدث
+- Visual Studio Build Tools (لنظام Windows)
 
-### Backup System
-
-- Export database + attachments + emails into a ZIP backup file
-- Import backup files to restore application data
-
-## Installation
-
-### Prerequisites
-
-- Node.js 18+ installed
-- npm or yarn package manager
-
-### Setup
+### خطوات التثبيت / Setup Steps
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd Fancy-foods-app
-
-# Install dependencies
+# 1. تثبيت التبعيات
 npm install
 
-# Start the application
-npm start
-```
-
-### Development
-
-```bash
-# Run in development mode
-NODE_ENV=development npm start
-```
-
-## Build on Windows
-
-### Prerequisites
-
-1. **Node.js LTS (v20.x)** - Download from https://nodejs.org/
-2. **Visual Studio Build Tools** with "Desktop development with C++" workload installed
-   - Download from https://visualstudio.microsoft.com/visual-cpp-build-tools/
-   - During installation, select "Desktop development with C++"
-
-### Build Steps
-
-```bash
-# Step 1: Install dependencies (automatically rebuilds native modules for Electron)
-npm install
-
-# Step 2: Build the Windows installer
+# 2. بناء ملف التثبيت
 npm run build
+
+# الملف الناتج يوجد في:
+# dist/FancyFoods Manager Setup 2.0.0.exe
 ```
 
-The installer will be located at:
-```
-dist/FancyFoods Manager Setup 1.0.0.exe
-```
+### تشغيل التطبيق في وضع التطوير / Development Mode
 
-**Alternative:** Use the Windows-specific build command:
 ```bash
-npm run build:win
+npm start
 ```
 
 ---
 
-## Building Installers (All Platforms)
+## الميزات / Features
 
-### Prerequisites
+### واجهة عربية / Arabic UI
+- واجهة مستخدم بالعربية بشكل افتراضي
+- دعم اتجاه RTL
+- إمكانية التبديل للإنجليزية من الإعدادات
 
-- **Node.js LTS** (Node 20.x) installed on your system
-- **npm** (comes with Node.js)
-- For Windows builds: Windows 10/11 with Visual Studio Build Tools (Desktop development with C++)
-- For macOS builds: macOS 10.15+ with Xcode Command Line Tools
+### العملة السورية / Syrian Pound (SYP)
+- العملة الافتراضية: ليرة سورية (ل.س)
+- عرض الأسعار والمبالغ بالليرة السورية
+- إمكانية التبديل للدولار الأمريكي
 
-### Build as macOS DMG
+### لوحة التحكم / Dashboard
+- عدد المنتجات والعملاء والموردين
+- الصفقات المفتوحة
+- تنبيهات المخزون المنخفض
+- قائمة مهام بسيطة (إضافة/حذف/إكمال)
 
-```bash
-npm install
-npm run build:mac
-```
+### إدارة الصفقات / Deals Management
+- سير عمل الصفقة: عرض ← طلب ← توريد ← لوجستيات ← تسليم ← دفع ← عمولة
+- حساب العمولة تلقائياً
+- إنشاء ملفات PDF (عرض، فاتورة، إذن تسليم)
 
-### Build for Current Platform
+### زر فحص التحديثات / Check for Updates
+- زر بسيط في الشريط الجانبي وصفحة الإعدادات
+- يفتح صفحة الإصدارات في GitHub
+- رسالة خطأ عربية عند عدم الاتصال بالإنترنت
 
-```bash
-npm install
-npm run build
-```
+---
 
-### Output Location
-
-Built installers will be placed in the `dist/` folder:
-- Windows: `dist/FancyFoods Manager Setup 1.0.0.exe`
-- macOS: `dist/FancyFoods Manager-1.0.0.dmg`
-
-### Custom Icon (Optional)
-
-To add a custom application icon:
-1. Create a 256x256 pixel (or larger) PNG image
-2. Convert it to ICO format (for Windows) using an online tool or ImageMagick
-3. Save as `renderer/assets/icon.ico`
-4. Update `package.json` build config:
-   ```json
-   "win": {
-     "target": "nsis",
-     "icon": "renderer/assets/icon.ico"
-   }
-   ```
-
-## Folder Structure
+## بنية المشروع / Project Structure
 
 ```
-/fancyfoods-app
-    /main.js           - Electron main process
-    /preload.js        - Secure IPC bridge
+/Fancy-foods-app
+    main.js              # العملية الرئيسية
+    preload.js           # جسر IPC آمن
+    package.json         # تكوين المشروع
+    /locales
+        ar.json          # ترجمة عربية
+        en.json          # ترجمة إنجليزية
     /renderer
-        index.html     - Main UI
-        style.css      - Custom styles
-        app.js         - Application logic
-        bootstrap.min.css
-        bootstrap.bundle.min.js
-    /database          - SQLite database location (created at runtime)
-    /attachments       - Deal attachments storage
-    /emails            - Sent emails archive
-    /backup            - Temporary backup extraction
+        index.html       # واجهة المستخدم
+        app.js           # منطق التطبيق
+        style.css        # الأنماط
+        /assets
+            logo.svg     # شعار السيد الدولية
 ```
 
-## Technology Stack
+---
 
-- **Electron** - Cross-platform desktop framework
-- **better-sqlite3** - Fast SQLite database
-- **nodemailer** - Email sending via SMTP
-- **Bootstrap 5** - UI framework (bundled locally)
-- **archiver / extract-zip** - Backup compression
+## كيفية الاستخدام / How to Use
 
-## Database Schema
+### فتح لوحة التحكم / Opening Dashboard
+- عند فتح التطبيق، تظهر لوحة التحكم تلقائياً
+- تعرض إحصائيات العمل وقائمة المهام
 
-- **products** - Product catalog
-- **clients** - Customer information
-- **broker_deals** - Brokerage deals with traders
-- **orders** - Sales orders
-- **order_items** - Order line items
-- **email_templates** - Saved email templates
-- **smtp_settings** - Email configuration
+### زر فحص التحديثات / Check for Updates
+- يوجد زر "فحص التحديثات" في الشريط الجانبي
+- عند النقر، يفتح المتصفح على صفحة الإصدارات
+- إذا لم يكن هناك اتصال، تظهر رسالة "غير متصل بالإنترنت"
 
-## SMTP Configuration
+### تغيير اللغة / Changing Language
+- اذهب إلى الإعدادات
+- اختر اللغة من القائمة المنسدلة
 
-The email module supports Hotmail/Outlook SMTP:
-- Host: smtp-mail.outlook.com
-- Port: 587
-- Secure: No (STARTTLS)
+### تغيير العملة / Changing Currency
+- اذهب إلى الإعدادات
+- اختر العملة: ليرة سورية أو دولار أمريكي
 
-Configure your email credentials in the Email module settings.
+---
 
-## Screenshots
+## التقنيات المستخدمة / Technology Stack
 
-### Dashboard / Workflow
-The main dashboard shows daily workflow checklist, statistics, pending orders, and open broker deals.
+- **Electron** - إطار عمل التطبيقات المكتبية
+- **better-sqlite3** - قاعدة بيانات SQLite سريعة
+- **Bootstrap 5** - إطار عمل واجهة المستخدم
+- **PDFKit** - إنشاء ملفات PDF
+- **nodemailer** - إرسال البريد الإلكتروني
 
-![Dashboard](docs/screenshots/01-dashboard.png)
+---
 
-### Products Management
-Full CRUD for product inventory with categories (nuts, seeds, mixed, roasted), units, and pricing.
-
-![Products](docs/screenshots/02-products.png)
-
-### Clients Management
-Manage shop owners and wholesalers with contact information (phone, WhatsApp, city).
-
-![Clients](docs/screenshots/03-clients.png)
-
-### Broker Deals
-Track brokerage deals for bulk food items (rice, starch, coffee, spices) with attachment support.
-
-![Broker Deals](docs/screenshots/04-broker-deals.png)
-
-### Orders Management
-Create and manage sales orders with multiple line items, auto-calculated totals, and status tracking.
-
-![Orders](docs/screenshots/05-orders.png)
-
-### Email Writer
-Built-in email composer with SMTP support, templates, and sent email archive.
-
-![Email](docs/screenshots/06-email.png)
-
-## License
+## الرخصة / License
 
 MIT
 
-## Troubleshooting
-
-### Native Module Errors
-
-If you encounter errors with `better-sqlite3` or other native modules:
-
-```bash
-# Rebuild native modules for Electron
-npm run rebuild
-```
-
-### Database Location
-
-The SQLite database is stored in the user data directory:
-- **Windows:** `%APPDATA%/fancyfoods-app/database/fancyfoods.db`
-- **macOS:** `~/Library/Application Support/fancyfoods-app/database/fancyfoods.db`
-- **Linux:** `~/.config/fancyfoods-app/database/fancyfoods.db`
-
-### Backup Files
-
-Backup files are exported as ZIP archives containing:
-- Database file (`database/fancyfoods.db`)
-- Attachments folder
-- Sent emails folder
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Create a Pull Request
-
-## Support
-
-For issues and feature requests, please open an issue on GitHub.

@@ -1,7 +1,14 @@
 {
   "app": {
-    "title": "مدير فانسي فودز",
-    "version": "الإصدار"
+    "title": "السيد الدولية - مدير الأعمال",
+    "version": "الإصدار",
+    "companyName": "السيد الدولية"
+  },
+  "currency": {
+    "label": "العملة",
+    "syp": "ليرة سورية",
+    "sypSymbol": "ل.س",
+    "usd": "دولار أمريكي"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -203,13 +210,16 @@
     "title": "الإعدادات",
     "language": "اللغة",
     "languageSelect": "اختر اللغة",
+    "currency": "العملة",
+    "currencySelect": "اختر العملة",
     "update": "التحديثات",
-    "checkUpdate": "البحث عن تحديثات",
+    "checkUpdate": "فحص التحديثات",
     "updateAvailable": "تحديث متوفر!",
     "noUpdate": "لديك أحدث إصدار",
     "downloadUpdate": "تحميل التحديث",
     "currentVersion": "الإصدار الحالي",
     "latestVersion": "أحدث إصدار",
+    "noInternet": "غير متصل بالإنترنت",
     "sync": {
       "title": "مزامنة البيانات",
       "syncNow": "مزامنة الآن",
@@ -225,6 +235,12 @@
       "import": "استيراد نسخة احتياطية"
     },
     "database": "موقع قاعدة البيانات"
+  },
+  "todoList": {
+    "title": "قائمة المهام",
+    "addTask": "إضافة مهمة",
+    "placeholder": "أدخل مهمة جديدة...",
+    "noTasks": "لا توجد مهام"
   },
   "common": {
     "save": "حفظ",

@@ -7,7 +7,9 @@ let suppliersData = [];
 let dealsData = [];
 let shipmentsData = [];
 let emailTemplates = [];
-let currentLanguage = 'en';
+let todoItems = [];
+let currentLanguage = 'ar';
+let currentCurrency = 'SYP';
 let translations = {};
 let currentDealId = null;
 
@@ -19,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadInitialData();
     displayAppVersion();
     checkOnlineStatus();
-    checkForUpdates();
     showModule('dashboard');
 });
 
@@ -27,8 +28,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadLanguage() {
     try {
         const settings = await window.api.settings.get();
-        currentLanguage = settings.language || 'en';
-        document.getElementById('language-select').value = currentLanguage;
+        currentLanguage = settings.language || 'ar';
+        currentCurrency = settings.currency || 'SYP';
+        
+        const langSelect = document.getElementById('language-select');
+        if (langSelect) langSelect.value = currentLanguage;
         
         // Load translation file
         const response = await fetch(`../locales/${currentLanguage}.json`);
@@ -123,30 +127,48 @@ async function checkOnlineStatus() {
         const text = statusEl.querySelector('.status-text');
         
         dot.className = 'status-dot ' + (online ? 'online' : 'offline');
-        text.textContent = online ? 'Online' : 'Offline';
+        text.textContent = online ? 'متصل' : 'غير متصل';
     } catch (error) {
         console.error('Error checking online status:', error);
     }
 }
 
-// ============ UPDATE SYSTEM ============
-async function checkForUpdates() {
+// ============ UPDATE SYSTEM (Simple - opens browser) ============
+async function checkForUpdatesButton() {
     try {
         const result = await window.api.update.check();
-        if (result.available) {
-            const banner = document.getElementById('update-banner');
-            banner.style.display = 'flex';
-            document.getElementById('btn-download-update').onclick = () => {
-                window.api.update.download(result.downloadUrl);
-            };
+        if (result.offline) {
+            showToast('تنبيه', 'غير متصل بالإنترنت');
+        } else {
+            // Open GitHub releases page
+            await window.api.update.openReleases();
+            showToast('نجاح', 'تم فتح صفحة التحديثات في المتصفح');
         }
     } catch (error) {
-        console.error('Error checking for updates:', error);
+        showToast('خطأ', 'غير متصل بالإنترنت');
     }
 }
 
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
+    // Check for Updates button (simple - just opens browser)
+    const btnCheckUpdates = document.getElementById('btn-check-updates');
+    if (btnCheckUpdates) {
+        btnCheckUpdates.addEventListener('click', checkForUpdatesButton);
+    }
+    
+    // Settings Update Button
+    const btnSettingsUpdate = document.getElementById('btn-settings-update');
+    if (btnSettingsUpdate) {
+        btnSettingsUpdate.addEventListener('click', checkForUpdatesButton);
+    }
+    
+    // Todo List
+    const btnAddTodo = document.getElementById('btn-add-todo');
+    const todoInput = document.getElementById('todo-input');
+    if (btnAddTodo) btnAddTodo.addEventListener('click', addTodoItem);
+    if (todoInput) todoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodoItem(); });
+    
     // Products
     document.getElementById('btn-add-product').addEventListener('click', () => openProductModal());
     document.getElementById('btn-save-product').addEventListener('click', saveProduct);
@@ -189,15 +211,16 @@ function setupEventListeners() {
     document.getElementById('btn-confirm-save-template').addEventListener('click', saveEmailTemplate);
     
     // Settings
-    document.getElementById('language-select').addEventListener('change', changeLanguage);
-    document.getElementById('btn-check-update').addEventListener('click', manualCheckUpdate);
-    document.getElementById('btn-sync-now').addEventListener('click', syncData);
-    document.getElementById('btn-settings-export').addEventListener('click', exportBackup);
-    document.getElementById('btn-settings-import').addEventListener('click', importBackup);
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.addEventListener('change', changeLanguage);
     
-    // Backup
-    document.getElementById('btn-export-backup').addEventListener('click', exportBackup);
-    document.getElementById('btn-import-backup').addEventListener('click', importBackup);
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) currencySelect.addEventListener('change', changeCurrency);
+    
+    const btnSettingsExport = document.getElementById('btn-settings-export');
+    const btnSettingsImport = document.getElementById('btn-settings-import');
+    if (btnSettingsExport) btnSettingsExport.addEventListener('click', exportBackup);
+    if (btnSettingsImport) btnSettingsImport.addEventListener('click', importBackup);
 }
 
 // ============ UTILITY FUNCTIONS ============
@@ -216,7 +239,11 @@ function showToast(title, message) {
 }
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+    const num = parseFloat(amount) || 0;
+    if (currentCurrency === 'SYP') {
+        return num.toLocaleString('ar-SY') + ' ل.س';
+    }
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
 }
 
 function formatDate(dateStr) {
@@ -248,7 +275,6 @@ async function loadDashboardData() {
         document.getElementById('stat-products').textContent = data.totalProducts;
         document.getElementById('stat-clients').textContent = data.totalClients;
         document.getElementById('stat-suppliers').textContent = data.totalSuppliers;
-        document.getElementById('stat-pending-orders').textContent = data.pendingOrdersCount;
         document.getElementById('stat-open-deals').textContent = data.openDealsCount;
         
         if (data.lowStockCount > 0) {
@@ -256,17 +282,78 @@ async function loadDashboardData() {
             document.getElementById('low-stock-count').textContent = data.lowStockCount;
         }
         
-        document.getElementById('recent-orders-list').innerHTML = data.recentOrders.length > 0 
-            ? data.recentOrders.map(o => `<div class="list-group-item"><strong>Order #${o.id}</strong> - ${escapeHtml(o.client_name || 'Unknown')}<br><small>${formatDate(o.order_date)}</small></div>`).join('')
-            : '<p class="text-muted text-center">No pending orders</p>';
-        
         document.getElementById('open-deals-list').innerHTML = data.openBrokerDeals.length > 0
-            ? data.openBrokerDeals.map(d => `<div class="list-group-item"><strong>${escapeHtml(d.product)}</strong> - ${d.quantity} tons ${getStageBadge(d.stage)}</div>`).join('')
-            : '<p class="text-muted text-center">No open deals</p>';
+            ? data.openBrokerDeals.map(d => `<div class="list-group-item"><strong>${escapeHtml(d.product)}</strong> - ${d.quantity} طن ${getStageBadge(d.stage)}</div>`).join('')
+            : '<p class="text-muted text-center">لا توجد صفقات مفتوحة</p>';
+        
+        // Load todo list
+        await loadTodoList();
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
 }
+
+// ============ TODO LIST ============
+async function loadTodoList() {
+    try {
+        todoItems = await window.api.todo.getAll();
+        renderTodoList();
+    } catch (error) {
+        console.error('Error loading todo list:', error);
+    }
+}
+
+function renderTodoList() {
+    const container = document.getElementById('todo-list');
+    if (!container) return;
+    
+    if (todoItems.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center small">لا توجد مهام</p>';
+        return;
+    }
+    
+    container.innerHTML = todoItems.map(item => `
+        <div class="list-group-item d-flex justify-content-between align-items-center ${item.completed ? 'text-decoration-line-through text-muted' : ''}">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleTodoItem(${item.id})">
+                <label class="form-check-label">${escapeHtml(item.text)}</label>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTodoItem(${item.id})">×</button>
+        </div>
+    `).join('');
+}
+
+async function addTodoItem() {
+    const input = document.getElementById('todo-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    try {
+        await window.api.todo.add(text);
+        input.value = '';
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في إضافة المهمة');
+    }
+}
+
+window.toggleTodoItem = async (id) => {
+    try {
+        await window.api.todo.toggle(id);
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في تحديث المهمة');
+    }
+};
+
+window.deleteTodoItem = async (id) => {
+    try {
+        await window.api.todo.delete(id);
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في حذف المهمة');
+    }
+};
 
 // ============ PRODUCTS (INVENTORY) ============
 async function loadProducts() {
@@ -766,46 +853,45 @@ async function saveEmailTemplate() {
 // ============ SETTINGS ============
 async function loadSettings() {
     const settings = await window.api.settings.get();
-    document.getElementById('language-select').value = settings.language || 'en';
-    document.getElementById('last-sync-time').textContent = settings.lastSync ? formatDate(settings.lastSync) : 'Never';
-    document.getElementById('database-path').textContent = await window.api.app.getDatabasePath();
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.value = settings.language || 'ar';
+    
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) currencySelect.value = settings.currency || 'SYP';
+    
+    const lastSyncTime = document.getElementById('last-sync-time');
+    if (lastSyncTime) lastSyncTime.textContent = settings.lastSync ? formatDate(settings.lastSync) : 'أبداً';
+    
+    const dbPath = document.getElementById('database-path');
+    if (dbPath) dbPath.textContent = await window.api.app.getDatabasePath();
 }
 
 async function changeLanguage() {
     const lang = document.getElementById('language-select').value;
     await window.api.settings.setLanguage(lang);
     await loadLanguage();
-    showToast('Success', 'Language changed');
+    showToast('نجاح', 'تم تغيير اللغة');
 }
 
-async function manualCheckUpdate() {
-    const result = await window.api.update.check();
-    const el = document.getElementById('update-result');
-    el.style.display = 'block';
-    if (result.offline) { el.className = 'alert alert-warning'; el.textContent = 'Offline - cannot check for updates'; }
-    else if (result.available) { el.className = 'alert alert-success'; el.innerHTML = `Update available: v${result.latestVersion} <button class="btn btn-sm btn-success ms-2" onclick="window.api.update.download('${result.downloadUrl}')">Download</button>`; }
-    else { el.className = 'alert alert-info'; el.textContent = 'You have the latest version'; }
-}
-
-async function syncData() {
-    const statusEl = document.getElementById('sync-status');
-    statusEl.textContent = 'Syncing...';
-    const result = await window.api.sync.run();
-    if (result.offline) { statusEl.textContent = 'Offline - sync not available'; }
-    else if (result.success) { statusEl.textContent = 'Sync completed'; document.getElementById('last-sync-time').textContent = formatDate(result.timestamp); }
-    else { statusEl.textContent = 'Sync failed'; }
+async function changeCurrency() {
+    const currency = document.getElementById('currency-select').value;
+    await window.api.settings.setCurrency(currency);
+    currentCurrency = currency;
+    showToast('نجاح', 'تم تغيير العملة');
+    // Refresh current module to update currency display
+    showModule('dashboard');
 }
 
 // ============ BACKUP ============
 async function exportBackup() {
     const result = await window.api.backup.export();
-    if (result) showToast('Success', 'Backup exported');
+    if (result) showToast('نجاح', 'تم تصدير النسخة الاحتياطية');
 }
 
 async function importBackup() {
-    const confirm = await window.api.dialog.showMessage({ type: 'warning', buttons: ['Cancel', 'Continue'], message: 'This will replace all current data. Continue?' });
+    const confirm = await window.api.dialog.showMessage({ type: 'warning', buttons: ['إلغاء', 'متابعة'], message: 'سيتم استبدال جميع البيانات الحالية. هل تريد المتابعة؟' });
     if (confirm.response === 1) {
         const result = await window.api.backup.import();
-        if (result) { showToast('Success', 'Backup restored. Reloading...'); setTimeout(() => location.reload(), 2000); }
+        if (result) { showToast('نجاح', 'تم استعادة النسخة الاحتياطية. جاري إعادة التحميل...'); setTimeout(() => location.reload(), 2000); }
     }
 }

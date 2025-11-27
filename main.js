@@ -29,7 +29,8 @@ let mainWindow;
 
 // App settings stored in memory
 let appSettings = {
-    language: 'en',
+    language: 'ar',
+    currency: 'SYP',
     lastSync: null
 };
 
@@ -254,25 +255,42 @@ function initializeDatabase() {
         db.prepare('INSERT INTO smtp_settings (id) VALUES (1)').run();
     }
     
+    // Todo list table for simple task management
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS todo_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT NOT NULL,
+            completed INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    
     // App settings table (NEW)
     db.exec(`
         CREATE TABLE IF NOT EXISTS app_settings (
             id INTEGER PRIMARY KEY CHECK (id = 1),
-            language TEXT DEFAULT 'en',
+            language TEXT DEFAULT 'ar',
+            currency TEXT DEFAULT 'SYP',
             last_sync TEXT,
             auto_update INTEGER DEFAULT 1
         )
     `);
     
+    // Add currency column if not exists
+    try {
+        db.exec(`ALTER TABLE app_settings ADD COLUMN currency TEXT DEFAULT 'SYP'`);
+    } catch (e) { /* Column exists */ }
+    
     const existingAppSettings = db.prepare('SELECT id FROM app_settings WHERE id = 1').get();
     if (!existingAppSettings) {
-        db.prepare('INSERT INTO app_settings (id, language) VALUES (1, "en")').run();
+        db.prepare('INSERT INTO app_settings (id, language, currency) VALUES (1, "ar", "SYP")').run();
     }
     
     // Load app settings
     const savedSettings = db.prepare('SELECT * FROM app_settings WHERE id = 1').get();
     if (savedSettings) {
-        appSettings.language = savedSettings.language || 'en';
+        appSettings.language = savedSettings.language || 'ar';
+        appSettings.currency = savedSettings.currency || 'SYP';
         appSettings.lastSync = savedSettings.last_sync;
     }
 }
@@ -1219,6 +1237,27 @@ ipcMain.handle('workflow:getData', () => {
     };
 });
 
+// ============ TODO LIST HANDLERS ============
+ipcMain.handle('todo:getAll', () => {
+    return db.prepare('SELECT * FROM todo_items ORDER BY completed ASC, created_at DESC').all();
+});
+
+ipcMain.handle('todo:add', (event, text) => {
+    const stmt = db.prepare('INSERT INTO todo_items (text) VALUES (?)');
+    const result = stmt.run(text);
+    return { id: result.lastInsertRowid, text, completed: 0 };
+});
+
+ipcMain.handle('todo:toggle', (event, id) => {
+    db.prepare('UPDATE todo_items SET completed = NOT completed WHERE id = ?').run(id);
+    return db.prepare('SELECT * FROM todo_items WHERE id = ?').get(id);
+});
+
+ipcMain.handle('todo:delete', (event, id) => {
+    db.prepare('DELETE FROM todo_items WHERE id = ?').run(id);
+    return true;
+});
+
 // ============ BACKUP IPC HANDLERS ============
 ipcMain.handle('backup:export', async () => {
     const date = new Date().toISOString().split('T')[0];
@@ -1344,7 +1383,8 @@ function copyDirRecursive(src, dest) {
 ipcMain.handle('settings:get', () => {
     const settings = db.prepare('SELECT * FROM app_settings WHERE id = 1').get();
     return {
-        language: settings?.language || 'en',
+        language: settings?.language || 'ar',
+        currency: settings?.currency || 'SYP',
         lastSync: settings?.last_sync,
         autoUpdate: settings?.auto_update === 1
     };
@@ -1352,11 +1392,12 @@ ipcMain.handle('settings:get', () => {
 
 ipcMain.handle('settings:save', (event, settings) => {
     const stmt = db.prepare(`
-        UPDATE app_settings SET language = ?, auto_update = ?
+        UPDATE app_settings SET language = ?, currency = ?, auto_update = ?
         WHERE id = 1
     `);
-    stmt.run(settings.language, settings.autoUpdate ? 1 : 0);
+    stmt.run(settings.language, settings.currency || 'SYP', settings.autoUpdate ? 1 : 0);
     appSettings.language = settings.language;
+    appSettings.currency = settings.currency || 'SYP';
     return true;
 });
 
@@ -1370,7 +1411,17 @@ ipcMain.handle('settings:setLanguage', (event, lang) => {
     return true;
 });
 
-// ============ UPDATE SYSTEM ============
+ipcMain.handle('settings:getCurrency', () => {
+    return appSettings.currency;
+});
+
+ipcMain.handle('settings:setCurrency', (event, currency) => {
+    db.prepare('UPDATE app_settings SET currency = ? WHERE id = 1').run(currency);
+    appSettings.currency = currency;
+    return true;
+});
+
+// ============ UPDATE SYSTEM (Simple - just opens browser) ============
 ipcMain.handle('update:check', async () => {
     try {
         // Check internet connectivity first
@@ -1378,33 +1429,16 @@ ipcMain.handle('update:check', async () => {
         if (!online) {
             return { available: false, offline: true };
         }
-        
-        const currentVersion = app.getVersion();
-        const latestRelease = await getLatestRelease();
-        
-        if (!latestRelease) {
-            return { available: false, error: 'Could not fetch release info' };
-        }
-        
-        const latestVersion = latestRelease.tag_name.replace('v', '');
-        const updateAvailable = compareVersions(latestVersion, currentVersion) > 0;
-        
-        return {
-            available: updateAvailable,
-            currentVersion,
-            latestVersion,
-            releaseUrl: latestRelease.html_url,
-            downloadUrl: latestRelease.assets?.[0]?.browser_download_url || latestRelease.html_url,
-            releaseNotes: latestRelease.body
-        };
+        // Just return online status - user clicks button to go to releases
+        return { available: false, online: true };
     } catch (error) {
-        console.error('Update check failed:', error);
-        return { available: false, error: error.message };
+        return { available: false, offline: true };
     }
 });
 
-ipcMain.handle('update:download', async (event, url) => {
-    shell.openExternal(url);
+ipcMain.handle('update:openReleases', async () => {
+    // Simply open the GitHub releases page in browser
+    shell.openExternal('https://github.com/munjed80/Fancy-foods-app/releases/latest');
     return true;
 });
 
@@ -1419,59 +1453,6 @@ function checkInternet() {
             resolve(false);
         });
     });
-}
-
-function getLatestRelease() {
-    return new Promise((resolve) => {
-        const options = {
-            hostname: 'api.github.com',
-            path: '/repos/munjed80/Fancy-foods-app/releases/latest',
-            method: 'GET',
-            headers: {
-                'User-Agent': 'FancyFoods-App',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            timeout: 10000
-        };
-        
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => data += chunk);
-            res.on('end', () => {
-                try {
-                    if (res.statusCode === 404) {
-                        resolve(null); // No releases yet
-                    } else if (res.statusCode === 200) {
-                        resolve(JSON.parse(data));
-                    } else {
-                        resolve(null);
-                    }
-                } catch (e) {
-                    resolve(null);
-                }
-            });
-        });
-        
-        req.on('error', () => resolve(null));
-        req.on('timeout', () => {
-            req.destroy();
-            resolve(null);
-        });
-        req.end();
-    });
-}
-
-function compareVersions(v1, v2) {
-    const parts1 = v1.split('.').map(Number);
-    const parts2 = v2.split('.').map(Number);
-    
-    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-        const p1 = parts1[i] || 0;
-        const p2 = parts2[i] || 0;
-        if (p1 > p2) return 1;
-        if (p1 < p2) return -1;
-    }
-    return 0;
 }
 
 // ============ SYNC PLACEHOLDER ============
