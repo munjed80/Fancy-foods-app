@@ -524,63 +524,63 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">المورد</label>
                                 <select class="form-select" id="deal-supplier">
-                                    <option value="">Select supplier...</option>
+                                    <option value="">اختر المورد...</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Product *</label>
-                                <input type="text" class="form-control" id="deal-product" required placeholder="e.g., Rice, Starch, Coffee">
+                                <label class="form-label">المنتج *</label>
+                                <input type="text" class="form-control" id="deal-product" required placeholder="مثال: أرز، نشاء، قهوة">
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Quantity (tons)</label>
+                                <label class="form-label">الكمية (طن)</label>
                                 <input type="number" class="form-control" id="deal-quantity" step="0.01" min="0">
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label class="form-label">Price per Ton</label>
+                                <label class="form-label">السعر/طن</label>
                                 <input type="number" class="form-control" id="deal-price" step="0.01" min="0">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Commission Rate (%)</label>
+                                <label class="form-label">نسبة العمولة (%)</label>
                                 <input type="number" class="form-control" id="deal-commission-rate" step="0.1" min="0" value="2.5">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Stage</label>
+                                <label class="form-label">المرحلة</label>
                                 <select class="form-select" id="deal-stage">
-                                    <option value="offer">Offer</option>
-                                    <option value="order">Order</option>
-                                    <option value="sourcing">Sourcing</option>
-                                    <option value="logistics">Logistics</option>
-                                    <option value="delivery">Delivery</option>
-                                    <option value="payment">Payment</option>
-                                    <option value="commission">Commission</option>
+                                    <option value="offer">العرض</option>
+                                    <option value="order">الطلب</option>
+                                    <option value="sourcing">التوريد</option>
+                                    <option value="logistics">اللوجستيات</option>
+                                    <option value="delivery">التسليم</option>
+                                    <option value="payment">الدفع</option>
+                                    <option value="commission">العمولة</option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">الحالة</label>
                                 <select class="form-select" id="deal-status">
-                                    <option value="draft">Draft</option>
-                                    <option value="offer_sent">Offer Sent</option>
-                                    <option value="order_confirmed">Order Confirmed</option>
-                                    <option value="sourcing">Sourcing</option>
-                                    <option value="in_transit">In Transit</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="draft">مسودة</option>
+                                    <option value="offer_sent">تم إرسال العرض</option>
+                                    <option value="order_confirmed">تم تأكيد الطلب</option>
+                                    <option value="sourcing">البحث عن مورد</option>
+                                    <option value="in_transit">في الطريق</option>
+                                    <option value="delivered">تم التسليم</option>
+                                    <option value="paid">مدفوع</option>
+                                    <option value="completed">مكتمل</option>
+                                    <option value="cancelled">ملغي</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Total Value</label>
+                                <label class="form-label">القيمة الإجمالية</label>
                                 <input type="text" class="form-control" id="deal-total" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Commission</label>
+                                <label class="form-label">العمولة</label>
                                 <input type="text" class="form-control" id="deal-commission" readonly>
                             </div>
                         </div>
@@ -590,24 +590,24 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="deal-notes" rows="2"></textarea>
                         </div>
                         <div class="mb-3" id="deal-attachments-section" style="display: none;">
-                            <label class="form-label">Attachments</label>
+                            <label class="form-label">المرفقات</label>
                             <div id="deal-attachments" class="d-flex flex-wrap gap-2 mb-2"></div>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-deal-attachment">+ Add Attachment</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-deal-attachment">+ إضافة مرفق</button>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <div class="me-auto" id="deal-pdf-buttons" style="display: none;">
-                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-offer">📄 Offer PDF</button>
-                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-invoice">📄 Invoice PDF</button>
-                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-delivery">📄 Delivery Note</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-offer">📄 عرض PDF</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-invoice">📄 فاتورة PDF</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-delivery">📄 إذن تسليم</button>
                     </div>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-deal">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-deal">حفظ</button>
                 </div>
             </div>
         </div>
@@ -618,65 +618,65 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="product-modal-title">Add Product</h5>
+                    <h5 class="modal-title" id="product-modal-title">إضافة منتج</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="product-form">
                         <input type="hidden" id="product-id">
                         <div class="mb-3">
-                            <label class="form-label">Name *</label>
+                            <label class="form-label">الاسم *</label>
                             <input type="text" class="form-control" id="product-name" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Category</label>
+                                <label class="form-label">الفئة</label>
                                 <select class="form-select" id="product-category">
-                                    <option value="nuts">Nuts</option>
-                                    <option value="seeds">Seeds</option>
-                                    <option value="mixed">Mixed</option>
-                                    <option value="roasted">Roasted</option>
-                                    <option value="dried_fruits">Dried Fruits</option>
-                                    <option value="spices">Spices</option>
+                                    <option value="nuts">مكسرات</option>
+                                    <option value="seeds">بذور</option>
+                                    <option value="mixed">مشكل</option>
+                                    <option value="roasted">محمص</option>
+                                    <option value="dried_fruits">فواكه مجففة</option>
+                                    <option value="spices">توابل</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Unit</label>
+                                <label class="form-label">الوحدة</label>
                                 <select class="form-select" id="product-unit">
-                                    <option value="kg">Kilogram (kg)</option>
-                                    <option value="ton">Ton</option>
-                                    <option value="box">Box</option>
-                                    <option value="bag">Bag</option>
+                                    <option value="kg">كيلوغرام</option>
+                                    <option value="ton">طن</option>
+                                    <option value="box">صندوق</option>
+                                    <option value="bag">كيس</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Price</label>
+                                <label class="form-label">السعر</label>
                                 <input type="number" class="form-control" id="product-price" step="0.01" min="0">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Stock</label>
+                                <label class="form-label">المخزون</label>
                                 <input type="number" class="form-control" id="product-stock" step="0.01" min="0">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Min Stock</label>
+                                <label class="form-label">الحد الأدنى</label>
                                 <input type="number" class="form-control" id="product-min-stock" step="0.01" min="0">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Location</label>
-                            <input type="text" class="form-control" id="product-location" placeholder="Main Warehouse">
+                            <label class="form-label">الموقع</label>
+                            <input type="text" class="form-control" id="product-location" placeholder="المستودع الرئيسي">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="product-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-product">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-product">حفظ</button>
                 </div>
             </div>
         </div>
@@ -687,7 +687,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="supplier-modal-title">Add Supplier</h5>
+                    <h5 class="modal-title" id="supplier-modal-title">إضافة مورد</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -695,42 +695,42 @@
                         <input type="hidden" id="supplier-id">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Name *</label>
+                                <label class="form-label">الاسم *</label>
                                 <input type="text" class="form-control" id="supplier-name" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Location</label>
+                                <label class="form-label">الموقع</label>
                                 <input type="text" class="form-control" id="supplier-location">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label">الهاتف</label>
                                 <input type="text" class="form-control" id="supplier-phone">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Email</label>
+                                <label class="form-label">البريد الإلكتروني</label>
                                 <input type="email" class="form-control" id="supplier-email">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Lead Time (days)</label>
+                                <label class="form-label">مدة التوريد (أيام)</label>
                                 <input type="number" class="form-control" id="supplier-lead-time" min="1" value="7">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Products & Prices</label>
+                            <label class="form-label">المنتجات والأسعار</label>
                             <div id="supplier-products-list"></div>
-                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btn-add-supplier-product">+ Add Product</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btn-add-supplier-product">+ إضافة منتج</button>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="supplier-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-supplier">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-supplier">حفظ</button>
                 </div>
             </div>
         </div>
@@ -741,57 +741,57 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="client-modal-title">Add Client</h5>
+                    <h5 class="modal-title" id="client-modal-title">إضافة عميل</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="client-form">
                         <input type="hidden" id="client-id">
                         <div class="mb-3">
-                            <label class="form-label">Name *</label>
+                            <label class="form-label">الاسم *</label>
                             <input type="text" class="form-control" id="client-name" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label">الهاتف</label>
                                 <input type="text" class="form-control" id="client-phone">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">WhatsApp</label>
+                                <label class="form-label">واتساب</label>
                                 <input type="text" class="form-control" id="client-whatsapp">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Address</label>
+                            <label class="form-label">العنوان</label>
                             <input type="text" class="form-control" id="client-address">
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">City</label>
+                                <label class="form-label">المدينة</label>
                                 <input type="text" class="form-control" id="client-city">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Financial Status</label>
+                                <label class="form-label">الحالة المالية</label>
                                 <select class="form-select" id="client-financial-status">
-                                    <option value="good">Good</option>
-                                    <option value="pending">Pending Payment</option>
-                                    <option value="overdue">Overdue</option>
+                                    <option value="good">جيد</option>
+                                    <option value="pending">مدفوعات معلقة</option>
+                                    <option value="overdue">متأخر</option>
                                 </select>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Credit Limit</label>
+                            <label class="form-label">حد الائتمان</label>
                             <input type="number" class="form-control" id="client-credit-limit" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="client-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-client">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-client">حفظ</button>
                 </div>
             </div>
         </div>
@@ -802,62 +802,62 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="shipment-modal-title">New Shipment</h5>
+                    <h5 class="modal-title" id="shipment-modal-title">شحنة جديدة</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="shipment-form">
                         <input type="hidden" id="shipment-id">
                         <div class="mb-3">
-                            <label class="form-label">Deal</label>
+                            <label class="form-label">الصفقة</label>
                             <select class="form-select" id="shipment-deal">
-                                <option value="">Select deal...</option>
+                                <option value="">اختر الصفقة...</option>
                             </select>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Origin</label>
+                                <label class="form-label">المصدر</label>
                                 <input type="text" class="form-control" id="shipment-origin">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Destination</label>
+                                <label class="form-label">الوجهة</label>
                                 <input type="text" class="form-control" id="shipment-destination">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Carrier</label>
+                                <label class="form-label">الناقل</label>
                                 <input type="text" class="form-control" id="shipment-carrier">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Tracking Number</label>
+                                <label class="form-label">رقم التتبع</label>
                                 <input type="text" class="form-control" id="shipment-tracking">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">ETA</label>
+                                <label class="form-label">وقت الوصول المتوقع</label>
                                 <input type="date" class="form-control" id="shipment-eta">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">الحالة</label>
                                 <select class="form-select" id="shipment-status">
-                                    <option value="pending">Pending</option>
-                                    <option value="in_transit">In Transit</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="delayed">Delayed</option>
+                                    <option value="pending">قيد الانتظار</option>
+                                    <option value="in_transit">في الطريق</option>
+                                    <option value="delivered">تم التسليم</option>
+                                    <option value="delayed">متأخر</option>
                                 </select>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Transport Notes</label>
+                            <label class="form-label">ملاحظات النقل</label>
                             <textarea class="form-control" id="shipment-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-shipment">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-shipment">حفظ</button>
                 </div>
             </div>
         </div>
@@ -868,36 +868,36 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">SMTP Settings</h5>
+                    <h5 class="modal-title">إعدادات SMTP</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="smtp-form">
                         <div class="mb-3">
-                            <label class="form-label">SMTP Host</label>
+                            <label class="form-label">خادم SMTP</label>
                             <input type="text" class="form-control" id="smtp-host" value="smtp-mail.outlook.com">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Port</label>
+                            <label class="form-label">المنفذ</label>
                             <input type="number" class="form-control" id="smtp-port" value="587">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="smtp-secure">
-                            <label class="form-check-label" for="smtp-secure">Use SSL/TLS</label>
+                            <label class="form-check-label" for="smtp-secure">استخدام SSL/TLS</label>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Email (Username)</label>
+                            <label class="form-label">البريد الإلكتروني</label>
                             <input type="email" class="form-control" id="smtp-user" placeholder="your-email@outlook.com">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Password</label>
+                            <label class="form-label">كلمة المرور</label>
                             <input type="password" class="form-control" id="smtp-pass">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-smtp">Save Settings</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-smtp">حفظ الإعدادات</button>
                 </div>
             </div>
         </div>
@@ -908,21 +908,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Save Email Template</h5>
+                    <h5 class="modal-title">حفظ قالب البريد</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="template-form">
                         <input type="hidden" id="template-id">
                         <div class="mb-3">
-                            <label class="form-label">Template Name *</label>
-                            <input type="text" class="form-control" id="template-name" required placeholder="e.g., Price Inquiry">
+                            <label class="form-label">اسم القالب *</label>
+                            <input type="text" class="form-control" id="template-name" required placeholder="مثال: استفسار سعر">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-confirm-save-template">Save Template</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save-template">حفظ القالب</button>
                 </div>
             </div>
         </div>
@@ -932,7 +932,7 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="app-toast" class="toast" role="alert">
             <div class="toast-header">
-                <strong class="me-auto" id="toast-title">Notification</strong>
+                <strong class="me-auto" id="toast-title">إشعار</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
             <div class="toast-body" id="toast-message"></div>
