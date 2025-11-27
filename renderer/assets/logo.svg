@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1a4d2e" stroke="#f5d061" stroke-width="3"/>
+  
+  <!-- Inner decorative circle -->
+  <circle cx="100" cy="100" r="75" fill="none" stroke="#f5d061" stroke-width="1.5" stroke-dasharray="8 4"/>
+  
+  <!-- Stylized wheat/nut symbol -->
+  <g fill="#f5d061">
+    <!-- Central element -->
+    <ellipse cx="100" cy="80" rx="15" ry="25"/>
+    <ellipse cx="75" cy="95" rx="12" ry="20" transform="rotate(-30 75 95)"/>
+    <ellipse cx="125" cy="95" rx="12" ry="20" transform="rotate(30 125 95)"/>
+    <ellipse cx="60" cy="115" rx="10" ry="16" transform="rotate(-45 60 115)"/>
+    <ellipse cx="140" cy="115" rx="10" ry="16" transform="rotate(45 140 115)"/>
+  </g>
+  
+  <!-- Arabic text: السيد -->
+  <text x="100" y="155" text-anchor="middle" fill="#f5d061" font-family="Arial, sans-serif" font-size="22" font-weight="bold">السيد</text>
+  
+  <!-- English text: ALSAYED -->
+  <text x="100" y="175" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="12" letter-spacing="2">ALSAYED INTL</text>
+</svg>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
-    <title>FancyFoods Manager</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>السيد الدولية - مدير الأعمال</title>
     <link rel="stylesheet" href="bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,64 +13,73 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2>🥜 FancyFoods</h2>
-                <p class="text-muted">Manager</p>
+                <div class="company-logo">
+                    <img src="assets/logo.svg" alt="السيد الدولية" class="logo-img" onerror="this.style.display='none'">
+                    <h2>🥜 السيد الدولية</h2>
+                </div>
+                <p class="text-muted" id="app-version">v2</p>
             </div>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#" data-module="workflow">
-                        <span class="nav-icon">📋</span>
-                        <span>Dashboard</span>
+                    <a class="nav-link active" href="#" data-module="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span data-i18n="nav.dashboard">لوحة التحكم</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="products">
+                    <a class="nav-link" href="#" data-module="deals">
+                        <span class="nav-icon">🤝</span>
+                        <span data-i18n="nav.deals">الصفقات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="inventory">
                         <span class="nav-icon">📦</span>
-                        <span>Products</span>
+                        <span data-i18n="nav.inventory">المخزون</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="suppliers">
+                        <span class="nav-icon">🏭</span>
+                        <span data-i18n="nav.suppliers">الموردين</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-module="clients">
                         <span class="nav-icon">👥</span>
-                        <span>Clients</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="broker">
-                        <span class="nav-icon">🤝</span>
-                        <span>Broker Deals</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="orders">
-                        <span class="nav-icon">🛒</span>
-                        <span>Orders</span>
+                        <span data-i18n="nav.clients">العملاء</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-module="email">
                         <span class="nav-icon">✉️</span>
-                        <span>Email</span>
+                        <span data-i18n="nav.emailCenter">مركز البريد</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="settings">
+                        <span class="nav-icon">⚙️</span>
+                        <span data-i18n="nav.settings">الإعدادات</span>
                     </a>
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <button class="btn btn-outline-primary btn-sm w-100 mb-2" id="btn-export-backup">
-                    💾 Export Backup
+                <div class="online-status mb-2" id="online-status">
+                    <span class="status-dot offline"></span>
+                    <span class="status-text">جاري الفحص...</span>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100 mb-2" id="btn-check-updates">
+                    🔄 فحص التحديثات
                 </button>
-                <button class="btn btn-outline-secondary btn-sm w-100" id="btn-import-backup">
-                    📥 Import Backup
-                </button>
-                <p class="version-text mt-2" id="app-version"></p>
             </div>
         </nav>
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Dashboard / Workflow Module -->
-            <section id="module-workflow" class="module-section active">
+            <!-- Dashboard Module -->
+            <section id="module-dashboard" class="module-section active">
                 <div class="module-header">
-                    <h1>📋 Daily Workflow Dashboard</h1>
+                    <h1>📊 <span data-i18n="dashboard.title">لوحة سير العمل اليومي</span></h1>
                 </div>
                 <div class="module-body">
                     <div class="row mb-4">
@@ -79,7 +88,7 @@
                                 <div class="stat-icon">📦</div>
                                 <div class="stat-info">
                                     <span class="stat-value" id="stat-products">0</span>
-                                    <span class="stat-label">Total Products</span>
+                                    <span class="stat-label" data-i18n="dashboard.totalProducts">إجمالي المنتجات</span>
                                 </div>
                             </div>
                         </div>
@@ -88,57 +97,81 @@
                                 <div class="stat-icon">👥</div>
                                 <div class="stat-info">
                                     <span class="stat-value" id="stat-clients">0</span>
-                                    <span class="stat-label">Total Clients</span>
+                                    <span class="stat-label" data-i18n="dashboard.totalClients">إجمالي العملاء</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">🏭</div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="stat-suppliers">0</span>
+                                    <span class="stat-label" data-i18n="dashboard.totalSuppliers">إجمالي الموردين</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="stat-card warning">
-                                <div class="stat-icon">🛒</div>
-                                <div class="stat-info">
-                                    <span class="stat-value" id="stat-pending-orders">0</span>
-                                    <span class="stat-label">Pending Orders</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card info">
                                 <div class="stat-icon">🤝</div>
                                 <div class="stat-info">
                                     <span class="stat-value" id="stat-open-deals">0</span>
-                                    <span class="stat-label">Open Deals</span>
+                                    <span class="stat-label" data-i18n="dashboard.openDeals">الصفقات المفتوحة</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-warning" id="low-stock-alert" style="display: none;">
+                                ⚠️ <span data-i18n="inventory.lowStock">تنبيه مخزون منخفض</span>: 
+                                <span id="low-stock-count">0</span> منتجات تحتاج إعادة تخزين
                             </div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
+                            <!-- Todo List Card -->
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>📋 <span data-i18n="todoList.title">قائمة المهام</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="todo-input" placeholder="أدخل مهمة جديدة...">
+                                        <button class="btn btn-primary" id="btn-add-todo">إضافة</button>
+                                    </div>
+                                    <div id="todo-list" class="list-group"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Daily Checklist Card -->
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>✅ Daily Checklist</h5>
+                                    <h5>✅ <span data-i18n="dashboard.dailyChecklist">قائمة المهام اليومية</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="checklist" id="daily-checklist">
                                         <div class="checklist-item">
                                             <input type="checkbox" id="check1">
-                                            <label for="check1">Step 1: Review new orders</label>
+                                            <label for="check1">الخطوة 1: مراجعة الطلبات الجديدة</label>
                                         </div>
                                         <div class="checklist-item">
                                             <input type="checkbox" id="check2">
-                                            <label for="check2">Step 2: Check inventory items low stock</label>
+                                            <label for="check2">الخطوة 2: فحص المخزون المنخفض</label>
                                         </div>
                                         <div class="checklist-item">
                                             <input type="checkbox" id="check3">
-                                            <label for="check3">Step 3: Pending brokerage deals</label>
+                                            <label for="check3">الخطوة 3: صفقات الوساطة المعلقة</label>
                                         </div>
                                         <div class="checklist-item">
                                             <input type="checkbox" id="check4">
-                                            <label for="check4">Step 4: Prepare shipments</label>
+                                            <label for="check4">الخطوة 4: تجهيز الشحنات</label>
                                         </div>
                                         <div class="checklist-item">
                                             <input type="checkbox" id="check5">
-                                            <label for="check5">Step 5: Contact traders</label>
+                                            <label for="check5">الخطوة 5: التواصل مع التجار</label>
                                         </div>
                                     </div>
                                 </div>
@@ -147,20 +180,7 @@
                         <div class="col-md-6">
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>🛒 Recent Pending Orders</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div id="recent-orders-list" class="list-group"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5>🤝 Open Broker Deals</h5>
+                                    <h5>🤝 <span data-i18n="dashboard.openBrokerDeals">صفقات الوساطة المفتوحة</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div id="open-deals-list" class="list-group"></div>
@@ -171,26 +191,139 @@
                 </div>
             </section>
 
-            <!-- Products Module -->
-            <section id="module-products" class="module-section">
+            <!-- Deals Module (Workflow Center) -->
+            <section id="module-deals" class="module-section">
                 <div class="module-header">
-                    <h1>📦 Products Management</h1>
-                    <button class="btn btn-primary" id="btn-add-product">+ Add Product</button>
+                    <h1>🤝 <span data-i18n="deals.title">إدارة الصفقات</span></h1>
+                    <button class="btn btn-primary" id="btn-add-deal"><span data-i18n="deals.addDeal">+ صفقة جديدة</span></button>
+                </div>
+                <div class="module-body">
+                    <!-- Workflow Steps Legend -->
+                    <div class="workflow-legend mb-4">
+                        <div class="workflow-step" data-stage="offer">1. العرض</div>
+                        <div class="workflow-step" data-stage="order">2. الطلب</div>
+                        <div class="workflow-step" data-stage="sourcing">3. التوريد</div>
+                        <div class="workflow-step" data-stage="logistics">4. اللوجستيات</div>
+                        <div class="workflow-step" data-stage="delivery">5. التسليم</div>
+                        <div class="workflow-step" data-stage="payment">6. الدفع</div>
+                        <div class="workflow-step" data-stage="commission">7. العمولة</div>
+                    </div>
+                    
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="deals-search" placeholder="بحث في الصفقات...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="deals-table">
+                            <thead>
+                                <tr>
+                                    <th>الرقم</th>
+                                    <th>العميل</th>
+                                    <th>المورد</th>
+                                    <th>المنتج</th>
+                                    <th>الكمية (طن)</th>
+                                    <th>السعر/طن</th>
+                                    <th>الإجمالي</th>
+                                    <th>العمولة</th>
+                                    <th>المرحلة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Module -->
+            <section id="module-inventory" class="module-section">
+                <div class="module-header">
+                    <h1>📦 <span data-i18n="inventory.title">إدارة المخزون</span></h1>
+                    <button class="btn btn-primary" id="btn-add-product"><span data-i18n="inventory.addProduct">+ إضافة منتج</span></button>
                 </div>
                 <div class="module-body">
                     <div class="search-bar mb-3">
-                        <input type="text" class="form-control" id="products-search" placeholder="Search products by name...">
+                        <input type="text" class="form-control" id="products-search" placeholder="بحث في المنتجات...">
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover" id="products-table">
                             <thead>
                                 <tr>
+                                    <th>الرقم</th>
+                                    <th>الاسم</th>
+                                    <th>الفئة</th>
+                                    <th>الوحدة</th>
+                                    <th>السعر</th>
+                                    <th>المخزون</th>
+                                    <th>الحد الأدنى</th>
+                                    <th>الموقع</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logistics Module -->
+            <section id="module-logistics" class="module-section">
+                <div class="module-header">
+                    <h1>🚚 <span data-i18n="logistics.title">Logistics Management</span></h1>
+                    <button class="btn btn-primary" id="btn-add-shipment"><span data-i18n="logistics.addShipment">+ New Shipment</span></button>
+                </div>
+                <div class="module-body">
+                    <!-- Stock by Location Overview -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>📍 <span data-i18n="logistics.availableStock">Available Stock by Location</span></h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="stock-by-location" class="row"></div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">📦 <span data-i18n="logistics.shipmentPlanning">Shipment Planning</span></h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="shipments-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Deal</th>
+                                    <th>Origin</th>
+                                    <th>Destination</th>
+                                    <th>Carrier</th>
+                                    <th>ETA</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Suppliers Module -->
+            <section id="module-suppliers" class="module-section">
+                <div class="module-header">
+                    <h1>🏭 <span data-i18n="suppliers.title">Suppliers Management</span></h1>
+                    <button class="btn btn-primary" id="btn-add-supplier"><span data-i18n="suppliers.addSupplier">+ Add Supplier</span></button>
+                </div>
+                <div class="module-body">
+                    <div class="search-bar mb-3">
+                        <input type="text" class="form-control" id="suppliers-search" placeholder="Search suppliers by name or location...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="suppliers-table">
+                            <thead>
+                                <tr>
                                     <th>ID</th>
                                     <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Unit</th>
-                                    <th>Price</th>
-                                    <th>Notes</th>
+                                    <th>Location</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Lead Time</th>
+                                    <th>Products</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -203,8 +336,8 @@
             <!-- Clients Module -->
             <section id="module-clients" class="module-section">
                 <div class="module-header">
-                    <h1>👥 Clients Management</h1>
-                    <button class="btn btn-primary" id="btn-add-client">+ Add Client</button>
+                    <h1>👥 <span data-i18n="clients.title">Clients Management</span></h1>
+                    <button class="btn btn-primary" id="btn-add-client"><span data-i18n="clients.addClient">+ Add Client</span></button>
                 </div>
                 <div class="module-body">
                     <div class="search-bar mb-3">
@@ -219,65 +352,8 @@
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
                                     <th>City</th>
-                                    <th>Notes</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Broker Deals Module -->
-            <section id="module-broker" class="module-section">
-                <div class="module-header">
-                    <h1>🤝 Broker Deals</h1>
-                    <button class="btn btn-primary" id="btn-add-deal">+ Add Deal</button>
-                </div>
-                <div class="module-body">
-                    <div class="search-bar mb-3">
-                        <input type="text" class="form-control" id="broker-search" placeholder="Search deals by trader or product...">
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="broker-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Trader</th>
-                                    <th>Product</th>
-                                    <th>Quantity</th>
-                                    <th>Price/Ton</th>
-                                    <th>Supplier</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Orders Module -->
-            <section id="module-orders" class="module-section">
-                <div class="module-header">
-                    <h1>🛒 Orders Management</h1>
-                    <button class="btn btn-primary" id="btn-add-order">+ New Order</button>
-                </div>
-                <div class="module-body">
-                    <div class="search-bar mb-3">
-                        <input type="text" class="form-control" id="orders-search" placeholder="Search orders by client name...">
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="orders-table">
-                            <thead>
-                                <tr>
-                                    <th>Order #</th>
-                                    <th>Client</th>
-                                    <th>Date</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
+                                    <th>Credit Limit</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -290,32 +366,32 @@
             <!-- Email Module -->
             <section id="module-email" class="module-section">
                 <div class="module-header">
-                    <h1>✉️ Email Writer</h1>
-                    <button class="btn btn-secondary" id="btn-email-settings">⚙️ SMTP Settings</button>
+                    <h1>✉️ <span data-i18n="email.title">Email Center</span></h1>
+                    <button class="btn btn-secondary" id="btn-email-settings">⚙️ <span data-i18n="email.smtpSettings">SMTP Settings</span></button>
                 </div>
                 <div class="module-body">
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Compose Email</h5>
+                                    <h5><span data-i18n="email.compose">Compose Email</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label class="form-label">To:</label>
+                                        <label class="form-label" data-i18n="email.fields.to">To:</label>
                                         <input type="email" class="form-control" id="email-to" placeholder="recipient@example.com">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Subject:</label>
+                                        <label class="form-label" data-i18n="email.fields.subject">Subject:</label>
                                         <input type="text" class="form-control" id="email-subject" placeholder="Email subject">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Body:</label>
+                                        <label class="form-label" data-i18n="email.fields.body">Body:</label>
                                         <textarea class="form-control" id="email-body" rows="8" placeholder="Type your email here..."></textarea>
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <button class="btn btn-primary" id="btn-send-email">📤 Send Email</button>
-                                        <button class="btn btn-outline-secondary" id="btn-save-template">💾 Save as Template</button>
+                                        <button class="btn btn-primary" id="btn-send-email">📤 <span data-i18n="email.actions.send">Send Email</span></button>
+                                        <button class="btn btn-outline-secondary" id="btn-save-template">💾 <span data-i18n="email.actions.saveTemplate">Save as Template</span></button>
                                     </div>
                                 </div>
                             </div>
@@ -323,7 +399,7 @@
                         <div class="col-md-4">
                             <div class="card mb-3">
                                 <div class="card-header">
-                                    <h5>📁 Templates</h5>
+                                    <h5>📁 <span data-i18n="email.templates">Templates</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div id="email-templates-list" class="list-group"></div>
@@ -331,7 +407,7 @@
                             </div>
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>📬 Sent Emails</h5>
+                                    <h5>📬 <span data-i18n="email.sentEmails">الرسائل المرسلة</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div id="sent-emails-list" class="list-group" style="max-height: 200px; overflow-y: auto;"></div>
@@ -341,7 +417,200 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Settings Module -->
+            <section id="module-settings" class="module-section">
+                <div class="module-header">
+                    <h1>⚙️ <span data-i18n="settings.title">الإعدادات</span></h1>
+                </div>
+                <div class="module-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Language Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🌐 <span data-i18n="settings.language">اللغة</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <label class="form-label" data-i18n="settings.languageSelect">اختر اللغة</label>
+                                    <select class="form-select" id="language-select">
+                                        <option value="ar" selected>العربية</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Currency Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>💰 <span data-i18n="settings.currency">العملة</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <label class="form-label" data-i18n="settings.currencySelect">اختر العملة</label>
+                                    <select class="form-select" id="currency-select">
+                                        <option value="SYP" selected>ليرة سورية (ل.س)</option>
+                                        <option value="USD">دولار أمريكي ($)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Update Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🔄 <span data-i18n="settings.update">التحديثات</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>الإصدار الحالي:</strong> <span id="current-version">2.0.0</span></p>
+                                    <button class="btn btn-outline-primary w-100" id="btn-settings-update">
+                                        🔄 فحص التحديثات
+                                    </button>
+                                    <p class="text-muted small mt-2">سيتم فتح صفحة التحديثات في المتصفح</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <!-- Backup Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>💾 <span data-i18n="settings.backup.title">النسخ الاحتياطي والاستعادة</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" id="btn-settings-export">
+                                            💾 تصدير نسخة احتياطية
+                                        </button>
+                                        <button class="btn btn-outline-secondary" id="btn-settings-import">
+                                            📥 استيراد نسخة احتياطية
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Database Info -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>🗄️ <span data-i18n="settings.database">موقع قاعدة البيانات</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small mb-0" id="database-path"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- Deal Modal -->
+    <div class="modal fade" id="deal-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deal-modal-title">صفقة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deal-form">
+                        <input type="hidden" id="deal-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">العميل</label>
+                                <select class="form-select" id="deal-client">
+                                    <option value="">اختر العميل...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المورد</label>
+                                <select class="form-select" id="deal-supplier">
+                                    <option value="">اختر المورد...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المنتج *</label>
+                                <input type="text" class="form-control" id="deal-product" required placeholder="مثال: أرز، نشاء، قهوة">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">الكمية (طن)</label>
+                                <input type="number" class="form-control" id="deal-quantity" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">السعر/طن</label>
+                                <input type="number" class="form-control" id="deal-price" step="0.01" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">نسبة العمولة (%)</label>
+                                <input type="number" class="form-control" id="deal-commission-rate" step="0.1" min="0" value="2.5">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">المرحلة</label>
+                                <select class="form-select" id="deal-stage">
+                                    <option value="offer">العرض</option>
+                                    <option value="order">الطلب</option>
+                                    <option value="sourcing">التوريد</option>
+                                    <option value="logistics">اللوجستيات</option>
+                                    <option value="delivery">التسليم</option>
+                                    <option value="payment">الدفع</option>
+                                    <option value="commission">العمولة</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="deal-status">
+                                    <option value="draft">مسودة</option>
+                                    <option value="offer_sent">تم إرسال العرض</option>
+                                    <option value="order_confirmed">تم تأكيد الطلب</option>
+                                    <option value="sourcing">البحث عن مورد</option>
+                                    <option value="in_transit">في الطريق</option>
+                                    <option value="delivered">تم التسليم</option>
+                                    <option value="paid">مدفوع</option>
+                                    <option value="completed">مكتمل</option>
+                                    <option value="cancelled">ملغي</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">القيمة الإجمالية</label>
+                                <input type="text" class="form-control" id="deal-total" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">العمولة</label>
+                                <input type="text" class="form-control" id="deal-commission" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="stock-alert-container" style="display: none;">
+                            <div class="alert alert-warning">
+                                ⚠️ <span id="stock-alert-text"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="deal-notes" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3" id="deal-attachments-section" style="display: none;">
+                            <label class="form-label">المرفقات</label>
+                            <div id="deal-attachments" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-deal-attachment">+ إضافة مرفق</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div class="me-auto" id="deal-pdf-buttons" style="display: none;">
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-offer">📄 عرض PDF</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-invoice">📄 فاتورة PDF</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" id="btn-generate-delivery">📄 إذن تسليم</button>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-deal">حفظ</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Product Modal -->
@@ -349,46 +618,119 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="product-modal-title">Add Product</h5>
+                    <h5 class="modal-title" id="product-modal-title">إضافة منتج</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="product-form">
                         <input type="hidden" id="product-id">
                         <div class="mb-3">
-                            <label class="form-label">Name *</label>
+                            <label class="form-label">الاسم *</label>
                             <input type="text" class="form-control" id="product-name" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" id="product-category">
-                                <option value="nuts">Nuts</option>
-                                <option value="seeds">Seeds</option>
-                                <option value="mixed">Mixed</option>
-                                <option value="roasted">Roasted</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الفئة</label>
+                                <select class="form-select" id="product-category">
+                                    <option value="nuts">مكسرات</option>
+                                    <option value="seeds">بذور</option>
+                                    <option value="mixed">مشكل</option>
+                                    <option value="roasted">محمص</option>
+                                    <option value="dried_fruits">فواكه مجففة</option>
+                                    <option value="spices">توابل</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الوحدة</label>
+                                <select class="form-select" id="product-unit">
+                                    <option value="kg">كيلوغرام</option>
+                                    <option value="ton">طن</option>
+                                    <option value="box">صندوق</option>
+                                    <option value="bag">كيس</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">السعر</label>
+                                <input type="number" class="form-control" id="product-price" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">المخزون</label>
+                                <input type="number" class="form-control" id="product-stock" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">الحد الأدنى</label>
+                                <input type="number" class="form-control" id="product-min-stock" step="0.01" min="0">
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Unit</label>
-                            <select class="form-select" id="product-unit">
-                                <option value="kg">Kilogram (kg)</option>
-                                <option value="box">Box</option>
-                                <option value="bag">Bag</option>
-                            </select>
+                            <label class="form-label">الموقع</label>
+                            <input type="text" class="form-control" id="product-location" placeholder="المستودع الرئيسي">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Price</label>
-                            <input type="number" class="form-control" id="product-price" step="0.01" min="0">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="product-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-product">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-product">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div class="modal fade" id="supplier-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="supplier-modal-title">إضافة مورد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="supplier-form">
+                        <input type="hidden" id="supplier-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الاسم *</label>
+                                <input type="text" class="form-control" id="supplier-name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الموقع</label>
+                                <input type="text" class="form-control" id="supplier-location">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">الهاتف</label>
+                                <input type="text" class="form-control" id="supplier-phone">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="supplier-email">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">مدة التوريد (أيام)</label>
+                                <input type="number" class="form-control" id="supplier-lead-time" min="1" value="7">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المنتجات والأسعار</label>
+                            <div id="supplier-products-list"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btn-add-supplier-product">+ إضافة منتج</button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="supplier-notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-supplier">حفظ</button>
                 </div>
             </div>
         </div>
@@ -399,167 +741,123 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="client-modal-title">Add Client</h5>
+                    <h5 class="modal-title" id="client-modal-title">إضافة عميل</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="client-form">
                         <input type="hidden" id="client-id">
                         <div class="mb-3">
-                            <label class="form-label">Name *</label>
+                            <label class="form-label">الاسم *</label>
                             <input type="text" class="form-control" id="client-name" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone</label>
-                            <input type="text" class="form-control" id="client-phone">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الهاتف</label>
+                                <input type="text" class="form-control" id="client-phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">واتساب</label>
+                                <input type="text" class="form-control" id="client-whatsapp">
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">WhatsApp</label>
-                            <input type="text" class="form-control" id="client-whatsapp">
+                            <label class="form-label">العنوان</label>
+                            <input type="text" class="form-control" id="client-address">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المدينة</label>
+                                <input type="text" class="form-control" id="client-city">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة المالية</label>
+                                <select class="form-select" id="client-financial-status">
+                                    <option value="good">جيد</option>
+                                    <option value="pending">مدفوعات معلقة</option>
+                                    <option value="overdue">متأخر</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">City</label>
-                            <input type="text" class="form-control" id="client-city">
+                            <label class="form-label">حد الائتمان</label>
+                            <input type="number" class="form-control" id="client-credit-limit" step="0.01" min="0">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">ملاحظات</label>
                             <textarea class="form-control" id="client-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-client">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-client">حفظ</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Broker Deal Modal -->
-    <div class="modal fade" id="deal-modal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <!-- Shipment Modal -->
+    <div class="modal fade" id="shipment-modal" tabindex="-1">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deal-modal-title">Add Broker Deal</h5>
+                    <h5 class="modal-title" id="shipment-modal-title">شحنة جديدة</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="deal-form">
-                        <input type="hidden" id="deal-id">
+                    <form id="shipment-form">
+                        <input type="hidden" id="shipment-id">
+                        <div class="mb-3">
+                            <label class="form-label">الصفقة</label>
+                            <select class="form-select" id="shipment-deal">
+                                <option value="">اختر الصفقة...</option>
+                            </select>
+                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Trader Name *</label>
-                                <input type="text" class="form-control" id="deal-trader" required>
+                                <label class="form-label">المصدر</label>
+                                <input type="text" class="form-control" id="shipment-origin">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Product *</label>
-                                <input type="text" class="form-control" id="deal-product" required placeholder="e.g., Rice, Starch, Coffee">
+                                <label class="form-label">الوجهة</label>
+                                <input type="text" class="form-control" id="shipment-destination">
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Quantity (tons)</label>
-                                <input type="number" class="form-control" id="deal-quantity" step="0.01" min="0">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الناقل</label>
+                                <input type="text" class="form-control" id="shipment-carrier">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Price per Ton</label>
-                                <input type="number" class="form-control" id="deal-price" step="0.01" min="0">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم التتبع</label>
+                                <input type="text" class="form-control" id="shipment-tracking">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="deal-status">
-                                    <option value="open">Open</option>
-                                    <option value="closed">Closed</option>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">وقت الوصول المتوقع</label>
+                                <input type="date" class="form-control" id="shipment-eta">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="shipment-status">
+                                    <option value="pending">قيد الانتظار</option>
+                                    <option value="in_transit">في الطريق</option>
+                                    <option value="delivered">تم التسليم</option>
+                                    <option value="delayed">متأخر</option>
                                 </select>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Supplier</label>
-                            <input type="text" class="form-control" id="deal-supplier">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea class="form-control" id="deal-notes" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3" id="attachments-section" style="display: none;">
-                            <label class="form-label">Attachments</label>
-                            <div id="deal-attachments" class="d-flex flex-wrap gap-2 mb-2"></div>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-attachment">+ Add Attachment</button>
+                            <label class="form-label">ملاحظات النقل</label>
+                            <textarea class="form-control" id="shipment-notes" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-deal">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Order Modal -->
-    <div class="modal fade" id="order-modal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="order-modal-title">New Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="order-form">
-                        <input type="hidden" id="order-id">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Client *</label>
-                                <select class="form-select" id="order-client" required>
-                                    <option value="">Select client...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Date</label>
-                                <input type="date" class="form-control" id="order-date">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="order-status">
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Order Items</label>
-                            <table class="table table-sm" id="order-items-table">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th width="100">Quantity</th>
-                                        <th width="120">Price</th>
-                                        <th width="120">Subtotal</th>
-                                        <th width="50"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="order-items-body"></tbody>
-                            </table>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-add-order-item">+ Add Item</button>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <label class="form-label">Notes</label>
-                                <textarea class="form-control" id="order-notes" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Total</label>
-                                <div class="h3 text-primary" id="order-total">$0.00</div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-order">Save Order</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-shipment">حفظ</button>
                 </div>
             </div>
         </div>
@@ -570,36 +868,36 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">SMTP Settings</h5>
+                    <h5 class="modal-title">إعدادات SMTP</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="smtp-form">
                         <div class="mb-3">
-                            <label class="form-label">SMTP Host</label>
+                            <label class="form-label">خادم SMTP</label>
                             <input type="text" class="form-control" id="smtp-host" value="smtp-mail.outlook.com">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Port</label>
+                            <label class="form-label">المنفذ</label>
                             <input type="number" class="form-control" id="smtp-port" value="587">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="smtp-secure">
-                            <label class="form-check-label" for="smtp-secure">Use SSL/TLS</label>
+                            <label class="form-check-label" for="smtp-secure">استخدام SSL/TLS</label>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Email (Username)</label>
+                            <label class="form-label">البريد الإلكتروني</label>
                             <input type="email" class="form-control" id="smtp-user" placeholder="your-email@outlook.com">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Password</label>
+                            <label class="form-label">كلمة المرور</label>
                             <input type="password" class="form-control" id="smtp-pass">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-save-smtp">Save Settings</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-smtp">حفظ الإعدادات</button>
                 </div>
             </div>
         </div>
@@ -610,21 +908,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Save Email Template</h5>
+                    <h5 class="modal-title">حفظ قالب البريد</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="template-form">
                         <input type="hidden" id="template-id">
                         <div class="mb-3">
-                            <label class="form-label">Template Name *</label>
-                            <input type="text" class="form-control" id="template-name" required placeholder="e.g., Price Inquiry">
+                            <label class="form-label">اسم القالب *</label>
+                            <input type="text" class="form-control" id="template-name" required placeholder="مثال: استفسار سعر">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn-confirm-save-template">Save Template</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save-template">حفظ القالب</button>
                 </div>
             </div>
         </div>
@@ -634,7 +932,7 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="app-toast" class="toast" role="alert">
             <div class="toast-header">
-                <strong class="me-auto" id="toast-title">Notification</strong>
+                <strong class="me-auto" id="toast-title">إشعار</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
             <div class="toast-body" id="toast-message"></div>

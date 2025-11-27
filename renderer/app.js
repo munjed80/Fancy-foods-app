@@ -1,74 +1,107 @@
-// FancyFoods Manager - Main Application JavaScript
+// FancyFoods Manager v2 - Main Application JavaScript
 
 // ============ GLOBAL STATE ============
 let productsData = [];
 let clientsData = [];
+let suppliersData = [];
 let dealsData = [];
-let ordersData = [];
+let shipmentsData = [];
 let emailTemplates = [];
+let todoItems = [];
+let currentLanguage = 'ar';
+let currentCurrency = 'SYP';
+let translations = {};
+let currentDealId = null;
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadLanguage();
     setupNavigation();
     setupEventListeners();
     await loadInitialData();
     displayAppVersion();
-    
-    // Show workflow/dashboard by default
-    showModule('workflow');
+    checkOnlineStatus();
+    showModule('dashboard');
 });
 
+// ============ LANGUAGE SYSTEM ============
+async function loadLanguage() {
+    try {
+        const settings = await window.api.settings.get();
+        currentLanguage = settings.language || 'ar';
+        currentCurrency = settings.currency || 'SYP';
+        
+        const langSelect = document.getElementById('language-select');
+        if (langSelect) langSelect.value = currentLanguage;
+        
+        // Load translation file
+        const response = await fetch(`../locales/${currentLanguage}.json`);
+        translations = await response.json();
+        
+        // Set document direction for RTL languages
+        document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.lang = currentLanguage;
+        
+        applyTranslations();
+    } catch (error) {
+        console.error('Error loading language:', error);
+    }
+}
+
+function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const value = getNestedTranslation(key);
+        if (value) el.textContent = value;
+    });
+}
+
+function getNestedTranslation(key) {
+    return key.split('.').reduce((obj, k) => obj?.[k], translations);
+}
+
+function t(key) {
+    return getNestedTranslation(key) || key;
+}
+
+// ============ NAVIGATION ============
 function setupNavigation() {
     document.querySelectorAll('.nav-link[data-module]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const module = link.dataset.module;
-            showModule(module);
+            showModule(link.dataset.module);
         });
     });
 }
 
 function showModule(moduleName) {
-    // Update nav links
     document.querySelectorAll('.nav-link[data-module]').forEach(link => {
         link.classList.toggle('active', link.dataset.module === moduleName);
     });
-    
-    // Show/hide module sections
     document.querySelectorAll('.module-section').forEach(section => {
         section.classList.toggle('active', section.id === `module-${moduleName}`);
     });
     
-    // Load module data
     switch (moduleName) {
-        case 'workflow':
-            loadWorkflowData();
-            break;
-        case 'products':
-            loadProducts();
-            break;
-        case 'clients':
-            loadClients();
-            break;
-        case 'broker':
-            loadBrokerDeals();
-            break;
-        case 'orders':
-            loadOrders();
-            break;
-        case 'email':
-            loadEmailData();
-            break;
+        case 'dashboard': loadDashboardData(); break;
+        case 'deals': loadDeals(); break;
+        case 'inventory': loadProducts(); break;
+        case 'logistics': loadLogistics(); break;
+        case 'suppliers': loadSuppliers(); break;
+        case 'clients': loadClients(); break;
+        case 'email': loadEmailData(); break;
+        case 'settings': loadSettings(); break;
     }
 }
 
+// ============ INITIAL DATA ============
 async function loadInitialData() {
     try {
-        [productsData, clientsData, dealsData, ordersData] = await Promise.all([
+        [productsData, clientsData, suppliersData, dealsData] = await Promise.all([
             window.api.products.getAll(),
             window.api.clients.getAll(),
-            window.api.broker.getAll(),
-            window.api.orders.getAll()
+            window.api.suppliers.getAll(),
+            window.api.deals.getAll()
         ]);
     } catch (error) {
         console.error('Error loading initial data:', error);
@@ -79,34 +112,96 @@ async function displayAppVersion() {
     try {
         const version = await window.api.app.getVersion();
         document.getElementById('app-version').textContent = `v${version}`;
+        document.getElementById('current-version').textContent = version;
     } catch (error) {
-        document.getElementById('app-version').textContent = 'v1.0.0';
+        document.getElementById('app-version').textContent = 'v2.0.0';
+    }
+}
+
+// ============ ONLINE STATUS ============
+async function checkOnlineStatus() {
+    try {
+        const online = await window.api.app.isOnline();
+        const statusEl = document.getElementById('online-status');
+        const dot = statusEl.querySelector('.status-dot');
+        const text = statusEl.querySelector('.status-text');
+        
+        dot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        text.textContent = online ? 'متصل' : 'غير متصل';
+    } catch (error) {
+        console.error('Error checking online status:', error);
+    }
+}
+
+// ============ UPDATE SYSTEM (Simple - opens browser) ============
+async function checkForUpdatesButton() {
+    try {
+        const result = await window.api.update.check();
+        if (result.offline) {
+            showToast('تنبيه', 'غير متصل بالإنترنت');
+        } else {
+            // Open GitHub releases page
+            await window.api.update.openReleases();
+            showToast('نجاح', 'تم فتح صفحة التحديثات في المتصفح');
+        }
+    } catch (error) {
+        showToast('خطأ', 'غير متصل بالإنترنت');
     }
 }
 
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
+    // Check for Updates button (simple - just opens browser)
+    const btnCheckUpdates = document.getElementById('btn-check-updates');
+    if (btnCheckUpdates) {
+        btnCheckUpdates.addEventListener('click', checkForUpdatesButton);
+    }
+    
+    // Settings Update Button
+    const btnSettingsUpdate = document.getElementById('btn-settings-update');
+    if (btnSettingsUpdate) {
+        btnSettingsUpdate.addEventListener('click', checkForUpdatesButton);
+    }
+    
+    // Todo List
+    const btnAddTodo = document.getElementById('btn-add-todo');
+    const todoInput = document.getElementById('todo-input');
+    if (btnAddTodo) btnAddTodo.addEventListener('click', addTodoItem);
+    if (todoInput) todoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodoItem(); });
+    
     // Products
     document.getElementById('btn-add-product').addEventListener('click', () => openProductModal());
     document.getElementById('btn-save-product').addEventListener('click', saveProduct);
     document.getElementById('products-search').addEventListener('input', debounce(searchProducts, 300));
+    
+    // Suppliers
+    document.getElementById('btn-add-supplier').addEventListener('click', () => openSupplierModal());
+    document.getElementById('btn-save-supplier').addEventListener('click', saveSupplier);
+    document.getElementById('btn-add-supplier-product').addEventListener('click', addSupplierProductRow);
+    document.getElementById('suppliers-search').addEventListener('input', debounce(searchSuppliers, 300));
     
     // Clients
     document.getElementById('btn-add-client').addEventListener('click', () => openClientModal());
     document.getElementById('btn-save-client').addEventListener('click', saveClient);
     document.getElementById('clients-search').addEventListener('input', debounce(searchClients, 300));
     
-    // Broker Deals
+    // Deals
     document.getElementById('btn-add-deal').addEventListener('click', () => openDealModal());
     document.getElementById('btn-save-deal').addEventListener('click', saveDeal);
-    document.getElementById('btn-add-attachment').addEventListener('click', addAttachment);
-    document.getElementById('broker-search').addEventListener('input', debounce(searchDeals, 300));
+    document.getElementById('btn-add-deal-attachment').addEventListener('click', addDealAttachment);
+    document.getElementById('deals-search').addEventListener('input', debounce(searchDeals, 300));
+    document.getElementById('deal-quantity').addEventListener('input', calculateDealTotals);
+    document.getElementById('deal-price').addEventListener('input', calculateDealTotals);
+    document.getElementById('deal-commission-rate').addEventListener('input', calculateDealTotals);
     
-    // Orders
-    document.getElementById('btn-add-order').addEventListener('click', () => openOrderModal());
-    document.getElementById('btn-save-order').addEventListener('click', saveOrder);
-    document.getElementById('btn-add-order-item').addEventListener('click', addOrderItem);
-    document.getElementById('orders-search').addEventListener('input', debounce(searchOrders, 300));
+    // PDF Generation
+    document.getElementById('btn-generate-offer').addEventListener('click', () => generatePDF('offer'));
+    document.getElementById('btn-generate-invoice').addEventListener('click', () => generatePDF('invoice'));
+    document.getElementById('btn-generate-delivery').addEventListener('click', () => generatePDF('delivery'));
+    
+    // Shipments
+    document.getElementById('btn-add-shipment').addEventListener('click', () => openShipmentModal());
+    document.getElementById('btn-save-shipment').addEventListener('click', saveShipment);
     
     // Email
     document.getElementById('btn-email-settings').addEventListener('click', openSmtpSettings);
@@ -115,53 +210,45 @@ function setupEventListeners() {
     document.getElementById('btn-save-template').addEventListener('click', openTemplateModal);
     document.getElementById('btn-confirm-save-template').addEventListener('click', saveEmailTemplate);
     
-    // Backup
-    document.getElementById('btn-export-backup').addEventListener('click', exportBackup);
-    document.getElementById('btn-import-backup').addEventListener('click', importBackup);
+    // Settings
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.addEventListener('change', changeLanguage);
+    
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) currencySelect.addEventListener('change', changeCurrency);
+    
+    const btnSettingsExport = document.getElementById('btn-settings-export');
+    const btnSettingsImport = document.getElementById('btn-settings-import');
+    if (btnSettingsExport) btnSettingsExport.addEventListener('click', exportBackup);
+    if (btnSettingsImport) btnSettingsImport.addEventListener('click', importBackup);
 }
 
 // ============ UTILITY FUNCTIONS ============
 function debounce(func, wait) {
     let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+    return function(...args) {
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
     };
 }
 
-function showToast(title, message, type = 'info') {
-    const toast = document.getElementById('app-toast');
+function showToast(title, message) {
     document.getElementById('toast-title').textContent = title;
     document.getElementById('toast-message').textContent = message;
-    
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
+    new bootstrap.Toast(document.getElementById('app-toast')).show();
 }
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(amount || 0);
+    const num = parseFloat(amount) || 0;
+    if (currentCurrency === 'SYP') {
+        return num.toLocaleString('ar-SY') + ' ل.س';
+    }
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
 }
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-function getStatusBadge(status) {
-    const statusClass = `badge-${status}`;
-    return `<span class="badge-status ${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function escapeHtml(text) {
@@ -171,103 +258,122 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ============ WORKFLOW MODULE ============
-async function loadWorkflowData() {
+function getStatusBadge(status) {
+    const colors = { open: 'primary', closed: 'success', pending: 'warning', draft: 'secondary', completed: 'success', cancelled: 'danger', good: 'success', overdue: 'danger' };
+    return `<span class="badge bg-${colors[status] || 'secondary'}">${status}</span>`;
+}
+
+function getStageBadge(stage) {
+    const colors = { offer: 'info', order: 'primary', sourcing: 'warning', logistics: 'secondary', delivery: 'info', payment: 'success', commission: 'success' };
+    return `<span class="badge bg-${colors[stage] || 'secondary'}">${stage}</span>`;
+}
+
+// ============ DASHBOARD ============
+async function loadDashboardData() {
     try {
         const data = await window.api.workflow.getData();
-        
-        // Update stats
         document.getElementById('stat-products').textContent = data.totalProducts;
         document.getElementById('stat-clients').textContent = data.totalClients;
-        document.getElementById('stat-pending-orders').textContent = data.pendingOrdersCount;
+        document.getElementById('stat-suppliers').textContent = data.totalSuppliers;
         document.getElementById('stat-open-deals').textContent = data.openDealsCount;
         
-        // Recent pending orders
-        const ordersHtml = data.recentOrders.length > 0 
-            ? data.recentOrders.map(order => `
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Order #${order.id}</strong> - ${escapeHtml(order.client_name || 'Unknown Client')}
-                        <br><small class="text-muted">${formatDate(order.order_date)}</small>
-                    </div>
-                    <span class="badge bg-warning text-dark">${formatCurrency(order.total_price)}</span>
-                </div>
-            `).join('')
-            : '<div class="empty-state"><div class="empty-state-icon">✅</div><p class="empty-state-text">No pending orders</p></div>';
-        document.getElementById('recent-orders-list').innerHTML = ordersHtml;
+        if (data.lowStockCount > 0) {
+            document.getElementById('low-stock-alert').style.display = 'block';
+            document.getElementById('low-stock-count').textContent = data.lowStockCount;
+        }
         
-        // Open broker deals
-        const dealsHtml = data.openBrokerDeals.length > 0
-            ? data.openBrokerDeals.map(deal => `
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>${escapeHtml(deal.trader_name)}</strong> - ${escapeHtml(deal.product)}
-                        <br><small class="text-muted">${deal.quantity} tons @ ${formatCurrency(deal.price_per_ton)}/ton</small>
-                    </div>
-                    ${getStatusBadge(deal.status)}
-                </div>
-            `).join('')
-            : '<div class="empty-state"><div class="empty-state-icon">✅</div><p class="empty-state-text">No open deals</p></div>';
-        document.getElementById('open-deals-list').innerHTML = dealsHtml;
+        document.getElementById('open-deals-list').innerHTML = data.openBrokerDeals.length > 0
+            ? data.openBrokerDeals.map(d => `<div class="list-group-item"><strong>${escapeHtml(d.product)}</strong> - ${d.quantity} طن ${getStageBadge(d.stage)}</div>`).join('')
+            : '<p class="text-muted text-center">لا توجد صفقات مفتوحة</p>';
         
+        // Load todo list
+        await loadTodoList();
     } catch (error) {
-        console.error('Error loading workflow data:', error);
-        showToast('Error', 'Failed to load dashboard data', 'error');
+        console.error('Error loading dashboard:', error);
     }
 }
 
-// ============ PRODUCTS MODULE ============
-async function loadProducts() {
+// ============ TODO LIST ============
+async function loadTodoList() {
     try {
-        productsData = await window.api.products.getAll();
-        renderProductsTable(productsData);
+        todoItems = await window.api.todo.getAll();
+        renderTodoList();
     } catch (error) {
-        console.error('Error loading products:', error);
-        showToast('Error', 'Failed to load products', 'error');
+        console.error('Error loading todo list:', error);
     }
+}
+
+function renderTodoList() {
+    const container = document.getElementById('todo-list');
+    if (!container) return;
+    
+    if (todoItems.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center small">لا توجد مهام</p>';
+        return;
+    }
+    
+    container.innerHTML = todoItems.map(item => `
+        <div class="list-group-item d-flex justify-content-between align-items-center ${item.completed ? 'text-decoration-line-through text-muted' : ''}">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleTodoItem(${item.id})">
+                <label class="form-check-label">${escapeHtml(item.text)}</label>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTodoItem(${item.id})">×</button>
+        </div>
+    `).join('');
+}
+
+async function addTodoItem() {
+    const input = document.getElementById('todo-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    try {
+        await window.api.todo.add(text);
+        input.value = '';
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في إضافة المهمة');
+    }
+}
+
+window.toggleTodoItem = async (id) => {
+    try {
+        await window.api.todo.toggle(id);
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في تحديث المهمة');
+    }
+};
+
+window.deleteTodoItem = async (id) => {
+    try {
+        await window.api.todo.delete(id);
+        await loadTodoList();
+    } catch (error) {
+        showToast('خطأ', 'فشل في حذف المهمة');
+    }
+};
+
+// ============ PRODUCTS (INVENTORY) ============
+async function loadProducts() {
+    productsData = await window.api.products.getAll();
+    renderProductsTable(productsData);
 }
 
 async function searchProducts(e) {
-    const query = e.target.value.trim();
-    try {
-        const results = query ? await window.api.products.search(query) : await window.api.products.getAll();
-        renderProductsTable(results);
-    } catch (error) {
-        console.error('Error searching products:', error);
-    }
+    const results = e.target.value.trim() ? await window.api.products.search(e.target.value) : await window.api.products.getAll();
+    renderProductsTable(results);
 }
 
 function renderProductsTable(products) {
     const tbody = document.querySelector('#products-table tbody');
-    
-    if (products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-4">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📦</div>
-                        <p class="empty-state-text">No products found. Click "Add Product" to create one.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = products.map(product => `
-        <tr>
-            <td>${product.id}</td>
-            <td>${escapeHtml(product.name)}</td>
-            <td><span class="badge bg-secondary">${escapeHtml(product.category)}</span></td>
-            <td>${escapeHtml(product.unit)}</td>
-            <td>${formatCurrency(product.price)}</td>
-            <td>${escapeHtml(product.notes) || '-'}</td>
-            <td class="row-actions">
-                <button class="btn btn-outline-primary btn-action" onclick="editProduct(${product.id})">✏️</button>
-                <button class="btn btn-outline-danger btn-action" onclick="deleteProduct(${product.id})">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = products.length === 0 ? '<tr><td colspan="9" class="text-center py-4">No products found</td></tr>' :
+        products.map(p => `<tr class="${p.stock <= p.min_stock && p.min_stock > 0 ? 'table-warning' : ''}">
+            <td>${p.id}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.category)}</td><td>${p.unit}</td>
+            <td>${formatCurrency(p.price)}</td><td>${p.stock}</td><td>${p.min_stock}</td><td>${escapeHtml(p.location)}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="editProduct(${p.id})">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})">🗑️</button></td></tr>`).join('');
 }
 
 function openProductModal(product = null) {
@@ -277,21 +383,21 @@ function openProductModal(product = null) {
     document.getElementById('product-category').value = product?.category || 'nuts';
     document.getElementById('product-unit').value = product?.unit || 'kg';
     document.getElementById('product-price').value = product?.price || '';
+    document.getElementById('product-stock').value = product?.stock || '';
+    document.getElementById('product-min-stock').value = product?.min_stock || '';
+    document.getElementById('product-location').value = product?.location || 'Main Warehouse';
     document.getElementById('product-notes').value = product?.notes || '';
-    
-    const modal = new bootstrap.Modal(document.getElementById('product-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('product-modal')).show();
 }
 
-async function editProduct(id) {
-    try {
-        const product = await window.api.products.getById(id);
-        openProductModal(product);
-    } catch (error) {
-        console.error('Error loading product:', error);
-        showToast('Error', 'Failed to load product', 'error');
+window.editProduct = async (id) => { openProductModal(await window.api.products.getById(id)); };
+window.deleteProduct = async (id) => {
+    if ((await window.api.dialog.showMessage({ type: 'question', buttons: ['Cancel', 'Delete'], message: 'Delete this product?' })).response === 1) {
+        await window.api.products.delete(id);
+        showToast('Success', 'Product deleted');
+        loadProducts();
     }
-}
+};
 
 async function saveProduct() {
     const product = {
@@ -300,104 +406,116 @@ async function saveProduct() {
         category: document.getElementById('product-category').value,
         unit: document.getElementById('product-unit').value,
         price: parseFloat(document.getElementById('product-price').value) || 0,
+        stock: parseFloat(document.getElementById('product-stock').value) || 0,
+        min_stock: parseFloat(document.getElementById('product-min-stock').value) || 0,
+        location: document.getElementById('product-location').value.trim() || 'Main Warehouse',
         notes: document.getElementById('product-notes').value.trim()
     };
-    
-    if (!product.name) {
-        showToast('Validation', 'Product name is required', 'warning');
-        return;
-    }
-    
-    try {
-        if (product.id) {
-            await window.api.products.update(product);
-            showToast('Success', 'Product updated successfully', 'success');
-        } else {
-            await window.api.products.create(product);
-            showToast('Success', 'Product created successfully', 'success');
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('product-modal')).hide();
-        await loadProducts();
-    } catch (error) {
-        console.error('Error saving product:', error);
-        showToast('Error', 'Failed to save product', 'error');
-    }
+    if (!product.name) { showToast('Error', 'Name is required'); return; }
+    product.id ? await window.api.products.update(product) : await window.api.products.create(product);
+    bootstrap.Modal.getInstance(document.getElementById('product-modal')).hide();
+    showToast('Success', 'Product saved');
+    loadProducts();
 }
 
-async function deleteProduct(id) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Are you sure you want to delete this product?'
+// ============ SUPPLIERS ============
+async function loadSuppliers() {
+    suppliersData = await window.api.suppliers.getAll();
+    renderSuppliersTable(suppliersData);
+}
+
+async function searchSuppliers(e) {
+    const results = e.target.value.trim() ? await window.api.suppliers.search(e.target.value) : await window.api.suppliers.getAll();
+    renderSuppliersTable(results);
+}
+
+function renderSuppliersTable(suppliers) {
+    const tbody = document.querySelector('#suppliers-table tbody');
+    tbody.innerHTML = suppliers.length === 0 ? '<tr><td colspan="8" class="text-center py-4">No suppliers found</td></tr>' :
+        suppliers.map(s => `<tr><td>${s.id}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.location)}</td>
+            <td>${escapeHtml(s.phone)}</td><td>${escapeHtml(s.email)}</td><td>${s.lead_time} days</td><td>-</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="editSupplier(${s.id})">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(${s.id})">🗑️</button></td></tr>`).join('');
+}
+
+function openSupplierModal(supplier = null) {
+    document.getElementById('supplier-modal-title').textContent = supplier ? 'Edit Supplier' : 'Add Supplier';
+    document.getElementById('supplier-id').value = supplier?.id || '';
+    document.getElementById('supplier-name').value = supplier?.name || '';
+    document.getElementById('supplier-location').value = supplier?.location || '';
+    document.getElementById('supplier-phone').value = supplier?.phone || '';
+    document.getElementById('supplier-email').value = supplier?.email || '';
+    document.getElementById('supplier-lead-time').value = supplier?.lead_time || 7;
+    document.getElementById('supplier-notes').value = supplier?.notes || '';
+    document.getElementById('supplier-products-list').innerHTML = '';
+    if (supplier?.products) supplier.products.forEach(p => addSupplierProductRow(p));
+    new bootstrap.Modal(document.getElementById('supplier-modal')).show();
+}
+
+function addSupplierProductRow(product = null) {
+    const container = document.getElementById('supplier-products-list');
+    const row = document.createElement('div');
+    row.className = 'row mb-2 supplier-product-row';
+    row.innerHTML = `<div class="col-5"><input type="text" class="form-control form-control-sm" placeholder="Product name" value="${escapeHtml(product?.product_name || '')}"></div>
+        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Price" value="${product?.price || ''}"></div>
+        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Stock" value="${product?.available_stock || ''}"></div>
+        <div class="col-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.supplier-product-row').remove()">×</button></div>`;
+    container.appendChild(row);
+}
+
+window.editSupplier = async (id) => { openSupplierModal(await window.api.suppliers.getById(id)); };
+window.deleteSupplier = async (id) => {
+    if ((await window.api.dialog.showMessage({ type: 'question', buttons: ['Cancel', 'Delete'], message: 'Delete this supplier?' })).response === 1) {
+        await window.api.suppliers.delete(id);
+        showToast('Success', 'Supplier deleted');
+        loadSuppliers();
+    }
+};
+
+async function saveSupplier() {
+    const products = [];
+    document.querySelectorAll('.supplier-product-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs[0].value.trim()) {
+            products.push({ product_name: inputs[0].value.trim(), price: parseFloat(inputs[1].value) || 0, available_stock: parseFloat(inputs[2].value) || 0 });
+        }
     });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.products.delete(id);
-            showToast('Success', 'Product deleted successfully', 'success');
-            await loadProducts();
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            showToast('Error', 'Failed to delete product', 'error');
-        }
-    }
+    const supplier = {
+        id: document.getElementById('supplier-id').value || null,
+        name: document.getElementById('supplier-name').value.trim(),
+        location: document.getElementById('supplier-location').value.trim(),
+        phone: document.getElementById('supplier-phone').value.trim(),
+        email: document.getElementById('supplier-email').value.trim(),
+        lead_time: parseInt(document.getElementById('supplier-lead-time').value) || 7,
+        notes: document.getElementById('supplier-notes').value.trim(),
+        products
+    };
+    if (!supplier.name) { showToast('Error', 'Name is required'); return; }
+    supplier.id ? await window.api.suppliers.update(supplier) : await window.api.suppliers.create(supplier);
+    bootstrap.Modal.getInstance(document.getElementById('supplier-modal')).hide();
+    showToast('Success', 'Supplier saved');
+    loadSuppliers();
 }
 
-// ============ CLIENTS MODULE ============
+// ============ CLIENTS ============
 async function loadClients() {
-    try {
-        clientsData = await window.api.clients.getAll();
-        renderClientsTable(clientsData);
-    } catch (error) {
-        console.error('Error loading clients:', error);
-        showToast('Error', 'Failed to load clients', 'error');
-    }
+    clientsData = await window.api.clients.getAll();
+    renderClientsTable(clientsData);
 }
 
 async function searchClients(e) {
-    const query = e.target.value.trim();
-    try {
-        const results = query ? await window.api.clients.search(query) : await window.api.clients.getAll();
-        renderClientsTable(results);
-    } catch (error) {
-        console.error('Error searching clients:', error);
-    }
+    const results = e.target.value.trim() ? await window.api.clients.search(e.target.value) : await window.api.clients.getAll();
+    renderClientsTable(results);
 }
 
 function renderClientsTable(clients) {
     const tbody = document.querySelector('#clients-table tbody');
-    
-    if (clients.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-4">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <p class="empty-state-text">No clients found. Click "Add Client" to create one.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = clients.map(client => `
-        <tr>
-            <td>${client.id}</td>
-            <td>${escapeHtml(client.name)}</td>
-            <td>${escapeHtml(client.phone) || '-'}</td>
-            <td>${escapeHtml(client.whatsapp) || '-'}</td>
-            <td>${escapeHtml(client.city) || '-'}</td>
-            <td>${escapeHtml(client.notes) || '-'}</td>
-            <td class="row-actions">
-                <button class="btn btn-outline-primary btn-action" onclick="editClient(${client.id})">✏️</button>
-                <button class="btn btn-outline-danger btn-action" onclick="deleteClient(${client.id})">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = clients.length === 0 ? '<tr><td colspan="8" class="text-center py-4">No clients found</td></tr>' :
+        clients.map(c => `<tr><td>${c.id}</td><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.phone)}</td>
+            <td>${escapeHtml(c.whatsapp)}</td><td>${escapeHtml(c.city)}</td><td>${getStatusBadge(c.financial_status)}</td>
+            <td>${formatCurrency(c.credit_limit)}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="editClient(${c.id})">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`).join('');
 }
 
 function openClientModal(client = null) {
@@ -406,22 +524,22 @@ function openClientModal(client = null) {
     document.getElementById('client-name').value = client?.name || '';
     document.getElementById('client-phone').value = client?.phone || '';
     document.getElementById('client-whatsapp').value = client?.whatsapp || '';
+    document.getElementById('client-address').value = client?.address || '';
     document.getElementById('client-city').value = client?.city || '';
+    document.getElementById('client-financial-status').value = client?.financial_status || 'good';
+    document.getElementById('client-credit-limit').value = client?.credit_limit || '';
     document.getElementById('client-notes').value = client?.notes || '';
-    
-    const modal = new bootstrap.Modal(document.getElementById('client-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('client-modal')).show();
 }
 
-async function editClient(id) {
-    try {
-        const client = await window.api.clients.getById(id);
-        openClientModal(client);
-    } catch (error) {
-        console.error('Error loading client:', error);
-        showToast('Error', 'Failed to load client', 'error');
+window.editClient = async (id) => { openClientModal(await window.api.clients.getById(id)); };
+window.deleteClient = async (id) => {
+    if ((await window.api.dialog.showMessage({ type: 'question', buttons: ['Cancel', 'Delete'], message: 'Delete this client?' })).response === 1) {
+        await window.api.clients.delete(id);
+        showToast('Success', 'Client deleted');
+        loadClients();
     }
-}
+};
 
 async function saveClient() {
     const client = {
@@ -429,661 +547,271 @@ async function saveClient() {
         name: document.getElementById('client-name').value.trim(),
         phone: document.getElementById('client-phone').value.trim(),
         whatsapp: document.getElementById('client-whatsapp').value.trim(),
+        address: document.getElementById('client-address').value.trim(),
         city: document.getElementById('client-city').value.trim(),
+        financial_status: document.getElementById('client-financial-status').value,
+        credit_limit: parseFloat(document.getElementById('client-credit-limit').value) || 0,
         notes: document.getElementById('client-notes').value.trim()
     };
-    
-    if (!client.name) {
-        showToast('Validation', 'Client name is required', 'warning');
-        return;
-    }
-    
-    try {
-        if (client.id) {
-            await window.api.clients.update(client);
-            showToast('Success', 'Client updated successfully', 'success');
-        } else {
-            await window.api.clients.create(client);
-            showToast('Success', 'Client created successfully', 'success');
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('client-modal')).hide();
-        await loadClients();
-    } catch (error) {
-        console.error('Error saving client:', error);
-        showToast('Error', 'Failed to save client', 'error');
-    }
+    if (!client.name) { showToast('Error', 'Name is required'); return; }
+    client.id ? await window.api.clients.update(client) : await window.api.clients.create(client);
+    bootstrap.Modal.getInstance(document.getElementById('client-modal')).hide();
+    showToast('Success', 'Client saved');
+    loadClients();
 }
 
-async function deleteClient(id) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Are you sure you want to delete this client?'
-    });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.clients.delete(id);
-            showToast('Success', 'Client deleted successfully', 'success');
-            await loadClients();
-        } catch (error) {
-            console.error('Error deleting client:', error);
-            showToast('Error', 'Failed to delete client', 'error');
-        }
-    }
-}
-
-// ============ BROKER DEALS MODULE ============
-let currentDealId = null;
-
-async function loadBrokerDeals() {
-    try {
-        dealsData = await window.api.broker.getAll();
-        renderDealsTable(dealsData);
-    } catch (error) {
-        console.error('Error loading deals:', error);
-        showToast('Error', 'Failed to load broker deals', 'error');
-    }
+// ============ DEALS ============
+async function loadDeals() {
+    dealsData = await window.api.deals.getAll();
+    await populateDealDropdowns();
+    renderDealsTable(dealsData);
 }
 
 async function searchDeals(e) {
-    const query = e.target.value.trim();
-    try {
-        const results = query ? await window.api.broker.search(query) : await window.api.broker.getAll();
-        renderDealsTable(results);
-    } catch (error) {
-        console.error('Error searching deals:', error);
-    }
+    const results = e.target.value.trim() ? await window.api.deals.search(e.target.value) : await window.api.deals.getAll();
+    renderDealsTable(results);
+}
+
+async function populateDealDropdowns() {
+    clientsData = await window.api.clients.getAll();
+    suppliersData = await window.api.suppliers.getAll();
+    
+    const clientSelect = document.getElementById('deal-client');
+    clientSelect.innerHTML = '<option value="">Select client...</option>' + clientsData.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+    
+    const supplierSelect = document.getElementById('deal-supplier');
+    supplierSelect.innerHTML = '<option value="">Select supplier...</option>' + suppliersData.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
 }
 
 function renderDealsTable(deals) {
-    const tbody = document.querySelector('#broker-table tbody');
-    
-    if (deals.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center py-4">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🤝</div>
-                        <p class="empty-state-text">No broker deals found. Click "Add Deal" to create one.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = deals.map(deal => `
-        <tr>
-            <td>${deal.id}</td>
-            <td>${escapeHtml(deal.trader_name)}</td>
-            <td>${escapeHtml(deal.product)}</td>
-            <td>${deal.quantity} tons</td>
-            <td>${formatCurrency(deal.price_per_ton)}</td>
-            <td>${escapeHtml(deal.supplier) || '-'}</td>
-            <td>${getStatusBadge(deal.status)}</td>
-            <td class="row-actions">
-                <button class="btn btn-outline-primary btn-action" onclick="editDeal(${deal.id})">✏️</button>
-                <button class="btn btn-outline-danger btn-action" onclick="deleteDeal(${deal.id})">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
+    const tbody = document.querySelector('#deals-table tbody');
+    tbody.innerHTML = deals.length === 0 ? '<tr><td colspan="10" class="text-center py-4">No deals found</td></tr>' :
+        deals.map(d => `<tr><td>${d.id}</td><td>${escapeHtml(d.client_name || '-')}</td><td>${escapeHtml(d.supplier_name || '-')}</td>
+            <td>${escapeHtml(d.product)}</td><td>${d.quantity}</td><td>${formatCurrency(d.price_per_ton)}</td>
+            <td>${formatCurrency(d.total_value)}</td><td>${formatCurrency(d.commission)}</td><td>${getStageBadge(d.stage)}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="editDeal(${d.id})">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteDeal(${d.id})">🗑️</button></td></tr>`).join('');
 }
 
 function openDealModal(deal = null) {
     currentDealId = deal?.id || null;
-    document.getElementById('deal-modal-title').textContent = deal ? 'Edit Broker Deal' : 'Add Broker Deal';
+    document.getElementById('deal-modal-title').textContent = deal ? 'Edit Deal' : 'New Deal';
     document.getElementById('deal-id').value = deal?.id || '';
-    document.getElementById('deal-trader').value = deal?.trader_name || '';
+    document.getElementById('deal-client').value = deal?.client_id || '';
+    document.getElementById('deal-supplier').value = deal?.supplier_id || '';
     document.getElementById('deal-product').value = deal?.product || '';
     document.getElementById('deal-quantity').value = deal?.quantity || '';
     document.getElementById('deal-price').value = deal?.price_per_ton || '';
-    document.getElementById('deal-supplier').value = deal?.supplier || '';
-    document.getElementById('deal-status').value = deal?.status || 'open';
+    document.getElementById('deal-commission-rate').value = deal?.commission_rate || 2.5;
+    document.getElementById('deal-stage').value = deal?.stage || 'offer';
+    document.getElementById('deal-status').value = deal?.status || 'draft';
     document.getElementById('deal-notes').value = deal?.notes || '';
+    calculateDealTotals();
     
-    // Show/hide attachments section
-    const attachmentsSection = document.getElementById('attachments-section');
+    const attachSection = document.getElementById('deal-attachments-section');
+    const pdfButtons = document.getElementById('deal-pdf-buttons');
     if (deal?.id) {
-        attachmentsSection.style.display = 'block';
+        attachSection.style.display = 'block';
+        pdfButtons.style.display = 'block';
         loadDealAttachments(deal.id);
     } else {
-        attachmentsSection.style.display = 'none';
+        attachSection.style.display = 'none';
+        pdfButtons.style.display = 'none';
     }
     
-    const modal = new bootstrap.Modal(document.getElementById('deal-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('deal-modal')).show();
+}
+
+function calculateDealTotals() {
+    const qty = parseFloat(document.getElementById('deal-quantity').value) || 0;
+    const price = parseFloat(document.getElementById('deal-price').value) || 0;
+    const rate = parseFloat(document.getElementById('deal-commission-rate').value) || 0;
+    const total = qty * price;
+    const commission = total * (rate / 100);
+    document.getElementById('deal-total').value = formatCurrency(total);
+    document.getElementById('deal-commission').value = formatCurrency(commission);
 }
 
 async function loadDealAttachments(dealId) {
-    try {
-        const attachments = await window.api.broker.getAttachments(dealId);
-        renderAttachments(attachments);
-    } catch (error) {
-        console.error('Error loading attachments:', error);
-    }
+    const attachments = await window.api.deals.getAttachments(dealId);
+    document.getElementById('deal-attachments').innerHTML = attachments.map(a => 
+        `<span class="badge bg-secondary me-1">${escapeHtml(a.name)} <button type="button" class="btn-close btn-close-white ms-1" style="font-size:0.5em" onclick="deleteDealAttachment('${a.path.replace(/\\/g, '\\\\')}')"></button></span>`
+    ).join('');
 }
 
-function renderAttachments(attachments) {
-    const container = document.getElementById('deal-attachments');
-    container.innerHTML = attachments.map(att => `
-        <div class="attachment-item">
-            <span onclick="openAttachment('${att.path.replace(/\\/g, '\\\\')}')" style="cursor: pointer;">📎 ${escapeHtml(att.name)}</span>
-            <button type="button" class="btn-remove" onclick="deleteAttachment('${att.path.replace(/\\/g, '\\\\')}')">×</button>
-        </div>
-    `).join('');
-}
-
-async function addAttachment() {
+async function addDealAttachment() {
     if (!currentDealId) return;
-    
-    try {
-        const result = await window.api.broker.addAttachment(currentDealId);
-        if (result) {
-            showToast('Success', 'Attachment added', 'success');
-            await loadDealAttachments(currentDealId);
-        }
-    } catch (error) {
-        console.error('Error adding attachment:', error);
-        showToast('Error', 'Failed to add attachment', 'error');
-    }
+    const result = await window.api.deals.addAttachment(currentDealId);
+    if (result) { showToast('Success', 'Attachment added'); loadDealAttachments(currentDealId); }
 }
 
-async function openAttachment(filePath) {
-    await window.api.broker.openAttachment(filePath);
-}
+window.deleteDealAttachment = async (path) => {
+    await window.api.deals.deleteAttachment(path);
+    if (currentDealId) loadDealAttachments(currentDealId);
+};
 
-async function deleteAttachment(filePath) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Delete this attachment?'
-    });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.broker.deleteAttachment(filePath);
-            showToast('Success', 'Attachment deleted', 'success');
-            if (currentDealId) {
-                await loadDealAttachments(currentDealId);
-            }
-        } catch (error) {
-            console.error('Error deleting attachment:', error);
-            showToast('Error', 'Failed to delete attachment', 'error');
-        }
+window.editDeal = async (id) => { await populateDealDropdowns(); openDealModal(await window.api.deals.getById(id)); };
+window.deleteDeal = async (id) => {
+    if ((await window.api.dialog.showMessage({ type: 'question', buttons: ['Cancel', 'Delete'], message: 'Delete this deal?' })).response === 1) {
+        await window.api.deals.delete(id);
+        showToast('Success', 'Deal deleted');
+        loadDeals();
     }
-}
-
-async function editDeal(id) {
-    try {
-        const deal = await window.api.broker.getById(id);
-        openDealModal(deal);
-    } catch (error) {
-        console.error('Error loading deal:', error);
-        showToast('Error', 'Failed to load deal', 'error');
-    }
-}
+};
 
 async function saveDeal() {
     const deal = {
         id: document.getElementById('deal-id').value || null,
-        trader_name: document.getElementById('deal-trader').value.trim(),
+        client_id: document.getElementById('deal-client').value || null,
+        supplier_id: document.getElementById('deal-supplier').value || null,
         product: document.getElementById('deal-product').value.trim(),
         quantity: parseFloat(document.getElementById('deal-quantity').value) || 0,
         price_per_ton: parseFloat(document.getElementById('deal-price').value) || 0,
-        supplier: document.getElementById('deal-supplier').value.trim(),
+        commission_rate: parseFloat(document.getElementById('deal-commission-rate').value) || 2.5,
+        stage: document.getElementById('deal-stage').value,
         status: document.getElementById('deal-status').value,
         notes: document.getElementById('deal-notes').value.trim()
     };
+    if (!deal.product) { showToast('Error', 'Product is required'); return; }
     
-    if (!deal.trader_name || !deal.product) {
-        showToast('Validation', 'Trader name and product are required', 'warning');
-        return;
-    }
+    const result = deal.id ? await window.api.deals.update(deal) : await window.api.deals.create(deal);
+    if (!deal.id) { currentDealId = result.id; await editDeal(result.id); return; }
     
+    bootstrap.Modal.getInstance(document.getElementById('deal-modal')).hide();
+    showToast('Success', 'Deal saved');
+    loadDeals();
+}
+
+async function generatePDF(type) {
+    if (!currentDealId) return;
     try {
-        if (deal.id) {
-            await window.api.broker.update(deal);
-            showToast('Success', 'Deal updated successfully', 'success');
-        } else {
-            const created = await window.api.broker.create(deal);
-            showToast('Success', 'Deal created successfully. You can now add attachments.', 'success');
-            // Reopen modal to show attachments section
-            await editDeal(created.id);
-            return;
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('deal-modal')).hide();
-        await loadBrokerDeals();
-    } catch (error) {
-        console.error('Error saving deal:', error);
-        showToast('Error', 'Failed to save deal', 'error');
+        if (type === 'offer') await window.api.pdf.generateOffer(currentDealId);
+        else if (type === 'invoice') await window.api.pdf.generateInvoice(currentDealId);
+        else if (type === 'delivery') await window.api.pdf.generateDeliveryNote(currentDealId);
+        showToast('Success', 'PDF generated');
+    } catch (error) { showToast('Error', error.message); }
+}
+
+// ============ LOGISTICS ============
+async function loadLogistics() {
+    shipmentsData = await window.api.shipments.getAll();
+    renderShipmentsTable(shipmentsData);
+    loadStockByLocation();
+}
+
+async function loadStockByLocation() {
+    const stockData = await window.api.locations.getStockByLocation();
+    document.getElementById('stock-by-location').innerHTML = stockData.map(loc => 
+        `<div class="col-md-4 mb-3"><div class="card"><div class="card-body">
+            <h6>${escapeHtml(loc.location)}</h6>
+            <p class="mb-0">${loc.product_count} products, ${loc.total_stock} units</p>
+        </div></div></div>`
+    ).join('') || '<p class="text-muted">No stock data</p>';
+}
+
+function renderShipmentsTable(shipments) {
+    const tbody = document.querySelector('#shipments-table tbody');
+    tbody.innerHTML = shipments.length === 0 ? '<tr><td colspan="8" class="text-center py-4">No shipments found</td></tr>' :
+        shipments.map(s => `<tr><td>${s.id}</td><td>${s.deal_id || '-'}</td><td>${escapeHtml(s.origin)}</td>
+            <td>${escapeHtml(s.destination)}</td><td>${escapeHtml(s.carrier)}</td><td>${formatDate(s.eta)}</td>
+            <td>${getStatusBadge(s.status)}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="editShipment(${s.id})">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteShipment(${s.id})">🗑️</button></td></tr>`).join('');
+}
+
+async function openShipmentModal(shipment = null) {
+    dealsData = await window.api.deals.getAll();
+    document.getElementById('shipment-deal').innerHTML = '<option value="">Select deal...</option>' + 
+        dealsData.map(d => `<option value="${d.id}">${d.id} - ${escapeHtml(d.product)}</option>`).join('');
+    
+    document.getElementById('shipment-modal-title').textContent = shipment ? 'Edit Shipment' : 'New Shipment';
+    document.getElementById('shipment-id').value = shipment?.id || '';
+    document.getElementById('shipment-deal').value = shipment?.deal_id || '';
+    document.getElementById('shipment-origin').value = shipment?.origin || '';
+    document.getElementById('shipment-destination').value = shipment?.destination || '';
+    document.getElementById('shipment-carrier').value = shipment?.carrier || '';
+    document.getElementById('shipment-tracking').value = shipment?.tracking_number || '';
+    document.getElementById('shipment-eta').value = shipment?.eta || '';
+    document.getElementById('shipment-status').value = shipment?.status || 'pending';
+    document.getElementById('shipment-notes').value = shipment?.transport_notes || '';
+    new bootstrap.Modal(document.getElementById('shipment-modal')).show();
+}
+
+window.editShipment = async (id) => { openShipmentModal(shipmentsData.find(s => s.id === id)); };
+window.deleteShipment = async (id) => {
+    if ((await window.api.dialog.showMessage({ type: 'question', buttons: ['Cancel', 'Delete'], message: 'Delete this shipment?' })).response === 1) {
+        await window.api.shipments.delete(id);
+        showToast('Success', 'Shipment deleted');
+        loadLogistics();
     }
-}
+};
 
-async function deleteDeal(id) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Are you sure you want to delete this broker deal and all its attachments?'
-    });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.broker.delete(id);
-            showToast('Success', 'Deal deleted successfully', 'success');
-            await loadBrokerDeals();
-        } catch (error) {
-            console.error('Error deleting deal:', error);
-            showToast('Error', 'Failed to delete deal', 'error');
-        }
-    }
-}
-
-// ============ ORDERS MODULE ============
-async function loadOrders() {
-    try {
-        ordersData = await window.api.orders.getAll();
-        renderOrdersTable(ordersData);
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        showToast('Error', 'Failed to load orders', 'error');
-    }
-}
-
-async function searchOrders(e) {
-    const query = e.target.value.trim();
-    try {
-        const results = query ? await window.api.orders.search(query) : await window.api.orders.getAll();
-        renderOrdersTable(results);
-    } catch (error) {
-        console.error('Error searching orders:', error);
-    }
-}
-
-function renderOrdersTable(orders) {
-    const tbody = document.querySelector('#orders-table tbody');
-    
-    if (orders.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-4">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🛒</div>
-                        <p class="empty-state-text">No orders found. Click "New Order" to create one.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = orders.map(order => `
-        <tr>
-            <td>#${order.id}</td>
-            <td>${escapeHtml(order.client_name) || 'Unknown'}</td>
-            <td>${formatDate(order.order_date)}</td>
-            <td>${formatCurrency(order.total_price)}</td>
-            <td>${getStatusBadge(order.status)}</td>
-            <td class="row-actions">
-                <button class="btn btn-outline-info btn-action" onclick="viewOrder(${order.id})">👁️</button>
-                <button class="btn btn-outline-primary btn-action" onclick="editOrder(${order.id})">✏️</button>
-                <button class="btn btn-outline-danger btn-action" onclick="deleteOrder(${order.id})">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-async function openOrderModal(order = null) {
-    document.getElementById('order-modal-title').textContent = order ? 'Edit Order' : 'New Order';
-    document.getElementById('order-id').value = order?.id || '';
-    document.getElementById('order-date').value = order?.order_date || new Date().toISOString().split('T')[0];
-    document.getElementById('order-status').value = order?.status || 'pending';
-    document.getElementById('order-notes').value = order?.notes || '';
-    
-    // Load clients dropdown
-    const clientSelect = document.getElementById('order-client');
-    clientSelect.innerHTML = '<option value="">Select client...</option>';
-    clientsData = await window.api.clients.getAll();
-    clientsData.forEach(client => {
-        const option = document.createElement('option');
-        option.value = client.id;
-        option.textContent = client.name;
-        if (order?.client_id == client.id) option.selected = true;
-        clientSelect.appendChild(option);
-    });
-    
-    // Load order items
-    const itemsBody = document.getElementById('order-items-body');
-    itemsBody.innerHTML = '';
-    
-    if (order?.items && order.items.length > 0) {
-        for (const item of order.items) {
-            addOrderItemRow(item);
-        }
-    } else {
-        addOrderItemRow();
-    }
-    
-    updateOrderTotal();
-    
-    const modal = new bootstrap.Modal(document.getElementById('order-modal'));
-    modal.show();
-}
-
-async function addOrderItem() {
-    addOrderItemRow();
-}
-
-async function addOrderItemRow(item = null) {
-    const tbody = document.getElementById('order-items-body');
-    const row = document.createElement('tr');
-    
-    productsData = await window.api.products.getAll();
-    
-    row.innerHTML = `
-        <td>
-            <select class="form-select form-select-sm order-item-product" onchange="onProductSelect(this)">
-                <option value="">Select product...</option>
-                ${productsData.map(p => `
-                    <option value="${p.id}" data-price="${p.price}" ${item?.product_id == p.id ? 'selected' : ''}>
-                        ${escapeHtml(p.name)} (${p.unit})
-                    </option>
-                `).join('')}
-            </select>
-        </td>
-        <td>
-            <input type="number" class="form-control form-control-sm order-item-qty" value="${item?.quantity || 1}" min="0.01" step="0.01" onchange="updateOrderTotal()">
-        </td>
-        <td>
-            <input type="number" class="form-control form-control-sm order-item-price" value="${item?.price || ''}" min="0" step="0.01" onchange="updateOrderTotal()">
-        </td>
-        <td class="order-item-subtotal">$0.00</td>
-        <td>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeOrderItem(this)">×</button>
-        </td>
-    `;
-    
-    tbody.appendChild(row);
-    updateOrderTotal();
-}
-
-function onProductSelect(select) {
-    const row = select.closest('tr');
-    const selectedOption = select.options[select.selectedIndex];
-    const price = selectedOption.dataset.price || 0;
-    row.querySelector('.order-item-price').value = price;
-    updateOrderTotal();
-}
-
-function removeOrderItem(btn) {
-    const row = btn.closest('tr');
-    row.remove();
-    updateOrderTotal();
-}
-
-function updateOrderTotal() {
-    let total = 0;
-    document.querySelectorAll('#order-items-body tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.order-item-qty').value) || 0;
-        const price = parseFloat(row.querySelector('.order-item-price').value) || 0;
-        const subtotal = qty * price;
-        row.querySelector('.order-item-subtotal').textContent = formatCurrency(subtotal);
-        total += subtotal;
-    });
-    document.getElementById('order-total').textContent = formatCurrency(total);
-}
-
-async function viewOrder(id) {
-    const order = await window.api.orders.getById(id);
-    openOrderModal(order);
-}
-
-async function editOrder(id) {
-    const order = await window.api.orders.getById(id);
-    openOrderModal(order);
-}
-
-async function saveOrder() {
-    const clientId = document.getElementById('order-client').value;
-    if (!clientId) {
-        showToast('Validation', 'Please select a client', 'warning');
-        return;
-    }
-    
-    const items = [];
-    document.querySelectorAll('#order-items-body tr').forEach(row => {
-        const productId = row.querySelector('.order-item-product').value;
-        const qty = parseFloat(row.querySelector('.order-item-qty').value) || 0;
-        const price = parseFloat(row.querySelector('.order-item-price').value) || 0;
-        
-        if (productId && qty > 0) {
-            items.push({
-                product_id: parseInt(productId),
-                quantity: qty,
-                price: price
-            });
-        }
-    });
-    
-    if (items.length === 0) {
-        showToast('Validation', 'Please add at least one item', 'warning');
-        return;
-    }
-    
-    const totalPrice = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-    
-    const order = {
-        id: document.getElementById('order-id').value || null,
-        client_id: parseInt(clientId),
-        order_date: document.getElementById('order-date').value,
-        total_price: totalPrice,
-        status: document.getElementById('order-status').value,
-        notes: document.getElementById('order-notes').value.trim(),
-        items: items
+async function saveShipment() {
+    const shipment = {
+        id: document.getElementById('shipment-id').value || null,
+        deal_id: document.getElementById('shipment-deal').value || null,
+        origin: document.getElementById('shipment-origin').value.trim(),
+        destination: document.getElementById('shipment-destination').value.trim(),
+        carrier: document.getElementById('shipment-carrier').value.trim(),
+        tracking_number: document.getElementById('shipment-tracking').value.trim(),
+        eta: document.getElementById('shipment-eta').value,
+        status: document.getElementById('shipment-status').value,
+        transport_notes: document.getElementById('shipment-notes').value.trim()
     };
-    
-    try {
-        if (order.id) {
-            await window.api.orders.update(order);
-            showToast('Success', 'Order updated successfully', 'success');
-        } else {
-            await window.api.orders.create(order);
-            showToast('Success', 'Order created successfully', 'success');
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('order-modal')).hide();
-        await loadOrders();
-    } catch (error) {
-        console.error('Error saving order:', error);
-        showToast('Error', 'Failed to save order', 'error');
-    }
+    shipment.id ? await window.api.shipments.update(shipment) : await window.api.shipments.create(shipment);
+    bootstrap.Modal.getInstance(document.getElementById('shipment-modal')).hide();
+    showToast('Success', 'Shipment saved');
+    loadLogistics();
 }
 
-async function deleteOrder(id) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Are you sure you want to delete this order?'
-    });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.orders.delete(id);
-            showToast('Success', 'Order deleted successfully', 'success');
-            await loadOrders();
-        } catch (error) {
-            console.error('Error deleting order:', error);
-            showToast('Error', 'Failed to delete order', 'error');
-        }
-    }
-}
-
-// ============ EMAIL MODULE ============
+// ============ EMAIL ============
 async function loadEmailData() {
     await loadEmailTemplates();
     await loadSentEmails();
-    await loadSmtpSettingsToForm();
 }
 
-async function loadSmtpSettingsToForm() {
-    try {
-        const settings = await window.api.email.getSettings();
+async function loadEmailTemplates() {
+    emailTemplates = await window.api.email.getTemplates();
+    document.getElementById('email-templates-list').innerHTML = emailTemplates.length === 0 ? '<p class="text-muted small">No templates</p>' :
+        emailTemplates.map(t => `<div class="list-group-item" onclick="loadTemplate(${t.id})">${escapeHtml(t.name)}</div>`).join('');
+}
+
+window.loadTemplate = async (id) => {
+    const template = emailTemplates.find(t => t.id === id);
+    if (template) {
+        document.getElementById('email-subject').value = template.subject || '';
+        document.getElementById('email-body').value = template.body || '';
+    }
+};
+
+async function loadSentEmails() {
+    const emails = await window.api.email.getSentEmails();
+    document.getElementById('sent-emails-list').innerHTML = emails.slice(0, 10).map(e => 
+        `<div class="list-group-item small" onclick="window.api.email.openSentEmail('${e.path.replace(/\\/g, '\\\\')}')">${escapeHtml(e.name)}</div>`
+    ).join('') || '<p class="text-muted small">No sent emails</p>';
+}
+
+function openSmtpSettings() {
+    window.api.email.getSettings().then(settings => {
         document.getElementById('smtp-host').value = settings?.host || 'smtp-mail.outlook.com';
         document.getElementById('smtp-port').value = settings?.port || 587;
         document.getElementById('smtp-secure').checked = settings?.secure === 1;
         document.getElementById('smtp-user').value = settings?.user || '';
         document.getElementById('smtp-pass').value = settings?.pass || '';
-    } catch (error) {
-        console.error('Error loading SMTP settings:', error);
-    }
-}
-
-function openSmtpSettings() {
-    loadSmtpSettingsToForm();
-    const modal = new bootstrap.Modal(document.getElementById('smtp-modal'));
-    modal.show();
+    });
+    new bootstrap.Modal(document.getElementById('smtp-modal')).show();
 }
 
 async function saveSmtpSettings() {
-    const settings = {
+    await window.api.email.saveSettings({
         host: document.getElementById('smtp-host').value.trim(),
         port: parseInt(document.getElementById('smtp-port').value) || 587,
         secure: document.getElementById('smtp-secure').checked,
         user: document.getElementById('smtp-user').value.trim(),
         pass: document.getElementById('smtp-pass').value
-    };
-    
-    try {
-        await window.api.email.saveSettings(settings);
-        showToast('Success', 'SMTP settings saved', 'success');
-        bootstrap.Modal.getInstance(document.getElementById('smtp-modal')).hide();
-    } catch (error) {
-        console.error('Error saving SMTP settings:', error);
-        showToast('Error', 'Failed to save settings', 'error');
-    }
-}
-
-async function loadEmailTemplates() {
-    try {
-        emailTemplates = await window.api.email.getTemplates();
-        renderTemplatesList(emailTemplates);
-    } catch (error) {
-        console.error('Error loading templates:', error);
-    }
-}
-
-function renderTemplatesList(templates) {
-    const container = document.getElementById('email-templates-list');
-    
-    if (templates.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center small py-2">No templates saved</p>';
-        return;
-    }
-    
-    container.innerHTML = templates.map(t => `
-        <div class="list-group-item template-item" onclick="loadTemplate(${t.id})">
-            <span class="template-name">📄 ${escapeHtml(t.name)}</span>
-            <button class="btn btn-sm btn-outline-danger btn-delete-template" onclick="event.stopPropagation(); deleteTemplate(${t.id})">🗑️</button>
-        </div>
-    `).join('');
-}
-
-async function loadTemplate(id) {
-    try {
-        const templates = await window.api.email.getTemplates();
-        const template = templates.find(t => t.id === id);
-        if (template) {
-            document.getElementById('email-subject').value = template.subject || '';
-            document.getElementById('email-body').value = template.body || '';
-            showToast('Template Loaded', template.name, 'info');
-        }
-    } catch (error) {
-        console.error('Error loading template:', error);
-    }
-}
-
-function openTemplateModal() {
-    document.getElementById('template-name').value = '';
-    const modal = new bootstrap.Modal(document.getElementById('template-modal'));
-    modal.show();
-}
-
-async function saveEmailTemplate() {
-    const name = document.getElementById('template-name').value.trim();
-    if (!name) {
-        showToast('Validation', 'Template name is required', 'warning');
-        return;
-    }
-    
-    const template = {
-        name: name,
-        subject: document.getElementById('email-subject').value,
-        body: document.getElementById('email-body').value
-    };
-    
-    try {
-        await window.api.email.saveTemplate(template);
-        showToast('Success', 'Template saved', 'success');
-        bootstrap.Modal.getInstance(document.getElementById('template-modal')).hide();
-        await loadEmailTemplates();
-    } catch (error) {
-        console.error('Error saving template:', error);
-        showToast('Error', 'Failed to save template', 'error');
-    }
-}
-
-async function deleteTemplate(id) {
-    const result = await window.api.dialog.showMessage({
-        type: 'question',
-        buttons: ['Cancel', 'Delete'],
-        defaultId: 0,
-        title: 'Confirm Delete',
-        message: 'Delete this template?'
     });
-    
-    if (result.response === 1) {
-        try {
-            await window.api.email.deleteTemplate(id);
-            showToast('Success', 'Template deleted', 'success');
-            await loadEmailTemplates();
-        } catch (error) {
-            console.error('Error deleting template:', error);
-        }
-    }
-}
-
-async function loadSentEmails() {
-    try {
-        const emails = await window.api.email.getSentEmails();
-        const container = document.getElementById('sent-emails-list');
-        
-        if (emails.length === 0) {
-            container.innerHTML = '<p class="text-muted text-center small py-2">No sent emails</p>';
-            return;
-        }
-        
-        container.innerHTML = emails.slice(0, 10).map(e => `
-            <div class="sent-email-item" onclick="openSentEmail('${e.path.replace(/\\/g, '\\\\')}')">
-                📧 ${escapeHtml(e.name)}
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Error loading sent emails:', error);
-    }
-}
-
-async function openSentEmail(filePath) {
-    await window.api.email.openSentEmail(filePath);
+    bootstrap.Modal.getInstance(document.getElementById('smtp-modal')).hide();
+    showToast('Success', 'SMTP settings saved');
 }
 
 async function sendEmail() {
@@ -1092,110 +820,78 @@ async function sendEmail() {
         subject: document.getElementById('email-subject').value.trim(),
         body: document.getElementById('email-body').value
     };
-    
-    if (!emailData.to) {
-        showToast('Validation', 'Recipient email is required', 'warning');
-        return;
-    }
-    
-    if (!emailData.subject) {
-        showToast('Validation', 'Subject is required', 'warning');
-        return;
-    }
+    if (!emailData.to || !emailData.subject) { showToast('Error', 'To and Subject are required'); return; }
     
     try {
-        const btn = document.getElementById('btn-send-email');
-        btn.disabled = true;
-        btn.textContent = '📤 Sending...';
-        
         await window.api.email.send(emailData);
-        showToast('Success', 'Email sent successfully!', 'success');
-        
-        // Clear form
+        showToast('Success', 'Email sent');
         document.getElementById('email-to').value = '';
         document.getElementById('email-subject').value = '';
         document.getElementById('email-body').value = '';
-        
-        await loadSentEmails();
-    } catch (error) {
-        console.error('Error sending email:', error);
-        showToast('Error', error.message || 'Failed to send email. Check your SMTP settings.', 'error');
-    } finally {
-        const btn = document.getElementById('btn-send-email');
-        btn.disabled = false;
-        btn.textContent = '📤 Send Email';
-    }
+        loadSentEmails();
+    } catch (error) { showToast('Error', error.message); }
 }
 
-// ============ BACKUP MODULE ============
+function openTemplateModal() {
+    document.getElementById('template-name').value = '';
+    new bootstrap.Modal(document.getElementById('template-modal')).show();
+}
+
+async function saveEmailTemplate() {
+    const name = document.getElementById('template-name').value.trim();
+    if (!name) { showToast('Error', 'Template name is required'); return; }
+    await window.api.email.saveTemplate({
+        name,
+        subject: document.getElementById('email-subject').value,
+        body: document.getElementById('email-body').value
+    });
+    bootstrap.Modal.getInstance(document.getElementById('template-modal')).hide();
+    showToast('Success', 'Template saved');
+    loadEmailTemplates();
+}
+
+// ============ SETTINGS ============
+async function loadSettings() {
+    const settings = await window.api.settings.get();
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.value = settings.language || 'ar';
+    
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) currencySelect.value = settings.currency || 'SYP';
+    
+    const lastSyncTime = document.getElementById('last-sync-time');
+    if (lastSyncTime) lastSyncTime.textContent = settings.lastSync ? formatDate(settings.lastSync) : 'أبداً';
+    
+    const dbPath = document.getElementById('database-path');
+    if (dbPath) dbPath.textContent = await window.api.app.getDatabasePath();
+}
+
+async function changeLanguage() {
+    const lang = document.getElementById('language-select').value;
+    await window.api.settings.setLanguage(lang);
+    await loadLanguage();
+    showToast('نجاح', 'تم تغيير اللغة');
+}
+
+async function changeCurrency() {
+    const currency = document.getElementById('currency-select').value;
+    await window.api.settings.setCurrency(currency);
+    currentCurrency = currency;
+    showToast('نجاح', 'تم تغيير العملة');
+    // Refresh current module to update currency display
+    showModule('dashboard');
+}
+
+// ============ BACKUP ============
 async function exportBackup() {
-    try {
-        const btn = document.getElementById('btn-export-backup');
-        btn.disabled = true;
-        btn.textContent = '💾 Exporting...';
-        
-        const result = await window.api.backup.export();
-        if (result) {
-            showToast('Success', 'Backup exported successfully!', 'success');
-        }
-    } catch (error) {
-        console.error('Error exporting backup:', error);
-        showToast('Error', 'Failed to export backup', 'error');
-    } finally {
-        const btn = document.getElementById('btn-export-backup');
-        btn.disabled = false;
-        btn.innerHTML = '💾 Export Backup';
-    }
+    const result = await window.api.backup.export();
+    if (result) showToast('نجاح', 'تم تصدير النسخة الاحتياطية');
 }
 
 async function importBackup() {
-    const result = await window.api.dialog.showMessage({
-        type: 'warning',
-        buttons: ['Cancel', 'Continue'],
-        defaultId: 0,
-        title: 'Import Backup',
-        message: 'This will replace all current data with the backup data. Are you sure you want to continue?'
-    });
-    
-    if (result.response === 1) {
-        try {
-            const btn = document.getElementById('btn-import-backup');
-            btn.disabled = true;
-            btn.textContent = '📥 Importing...';
-            
-            const importResult = await window.api.backup.import();
-            if (importResult) {
-                showToast('Success', 'Backup restored successfully! The app will reload.', 'success');
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            }
-        } catch (error) {
-            console.error('Error importing backup:', error);
-            showToast('Error', 'Failed to import backup', 'error');
-        } finally {
-            const btn = document.getElementById('btn-import-backup');
-            btn.disabled = false;
-            btn.innerHTML = '📥 Import Backup';
-        }
+    const confirm = await window.api.dialog.showMessage({ type: 'warning', buttons: ['إلغاء', 'متابعة'], message: 'سيتم استبدال جميع البيانات الحالية. هل تريد المتابعة؟' });
+    if (confirm.response === 1) {
+        const result = await window.api.backup.import();
+        if (result) { showToast('نجاح', 'تم استعادة النسخة الاحتياطية. جاري إعادة التحميل...'); setTimeout(() => location.reload(), 2000); }
     }
 }
-
-// Make functions globally available for onclick handlers
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
-window.editClient = editClient;
-window.deleteClient = deleteClient;
-window.editDeal = editDeal;
-window.deleteDeal = deleteDeal;
-window.openAttachment = openAttachment;
-window.deleteAttachment = deleteAttachment;
-window.viewOrder = viewOrder;
-window.editOrder = editOrder;
-window.deleteOrder = deleteOrder;
-window.onProductSelect = onProductSelect;
-window.removeOrderItem = removeOrderItem;
-window.updateOrderTotal = updateOrderTotal;
-window.loadTemplate = loadTemplate;
-window.deleteTemplate = deleteTemplate;
-window.openSentEmail = openSentEmail;
