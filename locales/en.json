@@ -1,0 +1,259 @@
+{
+  "app": {
+    "title": "FancyFoods Manager",
+    "version": "Version"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "deals": "Deals",
+    "inventory": "Inventory",
+    "logistics": "Logistics",
+    "suppliers": "Suppliers",
+    "clients": "Clients",
+    "emailCenter": "Email Center",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Daily Workflow Dashboard",
+    "totalProducts": "Total Products",
+    "totalClients": "Total Clients",
+    "totalSuppliers": "Total Suppliers",
+    "pendingOrders": "Pending Orders",
+    "openDeals": "Open Deals",
+    "recentOrders": "Recent Pending Orders",
+    "openBrokerDeals": "Open Broker Deals",
+    "dailyChecklist": "Daily Checklist",
+    "noOrders": "No pending orders",
+    "noDeals": "No open deals",
+    "checklistItems": {
+      "step1": "Step 1: Review new orders",
+      "step2": "Step 2: Check inventory items low stock",
+      "step3": "Step 3: Pending brokerage deals",
+      "step4": "Step 4: Prepare shipments",
+      "step5": "Step 5: Contact traders"
+    }
+  },
+  "deals": {
+    "title": "Deals Management",
+    "addDeal": "New Deal",
+    "workflow": {
+      "title": "Deal Workflow",
+      "offer": "Offer",
+      "order": "Order",
+      "sourcing": "Supplier Sourcing",
+      "logistics": "Logistics",
+      "delivery": "Delivery",
+      "payment": "Payment",
+      "commission": "Commission"
+    },
+    "fields": {
+      "id": "ID",
+      "client": "Client",
+      "supplier": "Supplier",
+      "product": "Product",
+      "quantity": "Quantity",
+      "pricePerTon": "Price/Ton",
+      "totalValue": "Total Value",
+      "commission": "Commission",
+      "commissionRate": "Commission Rate (%)",
+      "status": "Status",
+      "stage": "Stage",
+      "notes": "Notes",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Draft",
+      "offer_sent": "Offer Sent",
+      "order_confirmed": "Order Confirmed",
+      "sourcing": "Sourcing",
+      "in_transit": "In Transit",
+      "delivered": "Delivered",
+      "paid": "Paid",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "alerts": {
+      "lowStock": "Warning: Supplier stock is lower than requested quantity!",
+      "commissionCalculated": "Commission calculated"
+    },
+    "pdf": {
+      "generateOffer": "Generate Offer PDF",
+      "generateInvoice": "Generate Invoice PDF",
+      "generateDelivery": "Generate Delivery Note"
+    }
+  },
+  "inventory": {
+    "title": "Inventory Management",
+    "addProduct": "Add Product",
+    "fields": {
+      "id": "ID",
+      "name": "Name",
+      "category": "Category",
+      "unit": "Unit",
+      "price": "Price",
+      "stock": "Stock",
+      "location": "Location",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "categories": {
+      "nuts": "Nuts",
+      "seeds": "Seeds",
+      "mixed": "Mixed",
+      "roasted": "Roasted",
+      "dried_fruits": "Dried Fruits",
+      "spices": "Spices"
+    },
+    "units": {
+      "kg": "Kilogram (kg)",
+      "ton": "Ton",
+      "box": "Box",
+      "bag": "Bag"
+    },
+    "lowStock": "Low Stock Alert"
+  },
+  "logistics": {
+    "title": "Logistics Management",
+    "shipmentPlanning": "Shipment Planning",
+    "addShipment": "New Shipment",
+    "fields": {
+      "id": "Shipment ID",
+      "dealId": "Deal ID",
+      "origin": "Origin",
+      "destination": "Destination",
+      "carrier": "Carrier",
+      "eta": "ETA",
+      "status": "Status",
+      "transportNotes": "Transport Notes",
+      "trackingNumber": "Tracking Number"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_transit": "In Transit",
+      "delivered": "Delivered",
+      "delayed": "Delayed"
+    },
+    "bestRoute": "Best Route",
+    "availableStock": "Available Stock by Location"
+  },
+  "suppliers": {
+    "title": "Suppliers Management",
+    "addSupplier": "Add Supplier",
+    "fields": {
+      "id": "ID",
+      "name": "Name",
+      "location": "Location",
+      "phone": "Phone",
+      "email": "Email",
+      "products": "Products",
+      "leadTime": "Lead Time (days)",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "productList": "Product List with Prices"
+  },
+  "clients": {
+    "title": "Clients Management",
+    "addClient": "Add Client",
+    "fields": {
+      "id": "ID",
+      "name": "Name",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "address": "Address",
+      "city": "City",
+      "financialStatus": "Financial Status",
+      "creditLimit": "Credit Limit",
+      "orderHistory": "Order History",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "financialStatus": {
+      "good": "Good",
+      "pending": "Pending Payment",
+      "overdue": "Overdue"
+    }
+  },
+  "email": {
+    "title": "Email Center",
+    "compose": "Compose Email",
+    "smtpSettings": "SMTP Settings",
+    "templates": "Templates",
+    "sentEmails": "Sent Emails",
+    "fields": {
+      "to": "To",
+      "subject": "Subject",
+      "body": "Body"
+    },
+    "actions": {
+      "send": "Send Email",
+      "saveTemplate": "Save as Template",
+      "loadTemplate": "Load Template"
+    },
+    "smtp": {
+      "host": "SMTP Host",
+      "port": "Port",
+      "secure": "Use SSL/TLS",
+      "user": "Email (Username)",
+      "password": "Password"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageSelect": "Select Language",
+    "update": "Updates",
+    "checkUpdate": "Check for Updates",
+    "updateAvailable": "Update Available!",
+    "noUpdate": "You have the latest version",
+    "downloadUpdate": "Download Update",
+    "currentVersion": "Current Version",
+    "latestVersion": "Latest Version",
+    "sync": {
+      "title": "Data Sync",
+      "syncNow": "Sync Data",
+      "lastSync": "Last Sync",
+      "never": "Never",
+      "syncing": "Syncing...",
+      "success": "Sync completed successfully",
+      "offline": "Offline - Sync not available"
+    },
+    "backup": {
+      "title": "Backup & Restore",
+      "export": "Export Backup",
+      "import": "Import Backup"
+    },
+    "database": "Database Location"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search...",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "loading": "Loading...",
+    "noData": "No data found",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "messages": {
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "savedSuccess": "Saved successfully",
+    "deletedSuccess": "Deleted successfully",
+    "updateSuccess": "Updated successfully",
+    "errorOccurred": "An error occurred",
+    "offlineMode": "You are currently offline"
+  }
+}

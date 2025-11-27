@@ -1,0 +1,259 @@
+{
+  "app": {
+    "title": "مدير فانسي فودز",
+    "version": "الإصدار"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "deals": "الصفقات",
+    "inventory": "المخزون",
+    "logistics": "اللوجستيات",
+    "suppliers": "الموردين",
+    "clients": "العملاء",
+    "emailCenter": "مركز البريد",
+    "settings": "الإعدادات"
+  },
+  "dashboard": {
+    "title": "لوحة سير العمل اليومي",
+    "totalProducts": "إجمالي المنتجات",
+    "totalClients": "إجمالي العملاء",
+    "totalSuppliers": "إجمالي الموردين",
+    "pendingOrders": "الطلبات المعلقة",
+    "openDeals": "الصفقات المفتوحة",
+    "recentOrders": "الطلبات المعلقة الأخيرة",
+    "openBrokerDeals": "صفقات الوساطة المفتوحة",
+    "dailyChecklist": "قائمة المهام اليومية",
+    "noOrders": "لا توجد طلبات معلقة",
+    "noDeals": "لا توجد صفقات مفتوحة",
+    "checklistItems": {
+      "step1": "الخطوة 1: مراجعة الطلبات الجديدة",
+      "step2": "الخطوة 2: فحص المخزون المنخفض",
+      "step3": "الخطوة 3: صفقات الوساطة المعلقة",
+      "step4": "الخطوة 4: تجهيز الشحنات",
+      "step5": "الخطوة 5: التواصل مع التجار"
+    }
+  },
+  "deals": {
+    "title": "إدارة الصفقات",
+    "addDeal": "صفقة جديدة",
+    "workflow": {
+      "title": "سير عمل الصفقة",
+      "offer": "العرض",
+      "order": "الطلب",
+      "sourcing": "توريد المورد",
+      "logistics": "اللوجستيات",
+      "delivery": "التسليم",
+      "payment": "الدفع",
+      "commission": "العمولة"
+    },
+    "fields": {
+      "id": "الرقم",
+      "client": "العميل",
+      "supplier": "المورد",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "pricePerTon": "السعر/طن",
+      "totalValue": "القيمة الإجمالية",
+      "commission": "العمولة",
+      "commissionRate": "نسبة العمولة (%)",
+      "status": "الحالة",
+      "stage": "المرحلة",
+      "notes": "ملاحظات",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "draft": "مسودة",
+      "offer_sent": "تم إرسال العرض",
+      "order_confirmed": "تم تأكيد الطلب",
+      "sourcing": "البحث عن مورد",
+      "in_transit": "في الطريق",
+      "delivered": "تم التسليم",
+      "paid": "مدفوع",
+      "completed": "مكتمل",
+      "cancelled": "ملغي"
+    },
+    "alerts": {
+      "lowStock": "تحذير: مخزون المورد أقل من الكمية المطلوبة!",
+      "commissionCalculated": "تم حساب العمولة"
+    },
+    "pdf": {
+      "generateOffer": "إنشاء عرض PDF",
+      "generateInvoice": "إنشاء فاتورة PDF",
+      "generateDelivery": "إنشاء إشعار تسليم"
+    }
+  },
+  "inventory": {
+    "title": "إدارة المخزون",
+    "addProduct": "إضافة منتج",
+    "fields": {
+      "id": "الرقم",
+      "name": "الاسم",
+      "category": "الفئة",
+      "unit": "الوحدة",
+      "price": "السعر",
+      "stock": "المخزون",
+      "location": "الموقع",
+      "notes": "ملاحظات",
+      "actions": "الإجراءات"
+    },
+    "categories": {
+      "nuts": "مكسرات",
+      "seeds": "بذور",
+      "mixed": "خليط",
+      "roasted": "محمص",
+      "dried_fruits": "فواكه مجففة",
+      "spices": "توابل"
+    },
+    "units": {
+      "kg": "كيلوغرام",
+      "ton": "طن",
+      "box": "صندوق",
+      "bag": "كيس"
+    },
+    "lowStock": "تنبيه مخزون منخفض"
+  },
+  "logistics": {
+    "title": "إدارة اللوجستيات",
+    "shipmentPlanning": "تخطيط الشحنات",
+    "addShipment": "شحنة جديدة",
+    "fields": {
+      "id": "رقم الشحنة",
+      "dealId": "رقم الصفقة",
+      "origin": "المصدر",
+      "destination": "الوجهة",
+      "carrier": "الناقل",
+      "eta": "وقت الوصول المتوقع",
+      "status": "الحالة",
+      "transportNotes": "ملاحظات النقل",
+      "trackingNumber": "رقم التتبع"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "in_transit": "في الطريق",
+      "delivered": "تم التسليم",
+      "delayed": "متأخر"
+    },
+    "bestRoute": "أفضل مسار",
+    "availableStock": "المخزون المتوفر حسب الموقع"
+  },
+  "suppliers": {
+    "title": "إدارة الموردين",
+    "addSupplier": "إضافة مورد",
+    "fields": {
+      "id": "الرقم",
+      "name": "الاسم",
+      "location": "الموقع",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "products": "المنتجات",
+      "leadTime": "مدة التوريد (أيام)",
+      "notes": "ملاحظات",
+      "actions": "الإجراءات"
+    },
+    "productList": "قائمة المنتجات والأسعار"
+  },
+  "clients": {
+    "title": "إدارة العملاء",
+    "addClient": "إضافة عميل",
+    "fields": {
+      "id": "الرقم",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "whatsapp": "واتساب",
+      "address": "العنوان",
+      "city": "المدينة",
+      "financialStatus": "الحالة المالية",
+      "creditLimit": "حد الائتمان",
+      "orderHistory": "سجل الطلبات",
+      "notes": "ملاحظات",
+      "actions": "الإجراءات"
+    },
+    "financialStatus": {
+      "good": "جيد",
+      "pending": "مدفوعات معلقة",
+      "overdue": "متأخر"
+    }
+  },
+  "email": {
+    "title": "مركز البريد الإلكتروني",
+    "compose": "كتابة بريد",
+    "smtpSettings": "إعدادات SMTP",
+    "templates": "القوالب",
+    "sentEmails": "الرسائل المرسلة",
+    "fields": {
+      "to": "إلى",
+      "subject": "الموضوع",
+      "body": "النص"
+    },
+    "actions": {
+      "send": "إرسال البريد",
+      "saveTemplate": "حفظ كقالب",
+      "loadTemplate": "تحميل قالب"
+    },
+    "smtp": {
+      "host": "خادم SMTP",
+      "port": "المنفذ",
+      "secure": "استخدام SSL/TLS",
+      "user": "البريد (اسم المستخدم)",
+      "password": "كلمة المرور"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة",
+    "languageSelect": "اختر اللغة",
+    "update": "التحديثات",
+    "checkUpdate": "البحث عن تحديثات",
+    "updateAvailable": "تحديث متوفر!",
+    "noUpdate": "لديك أحدث إصدار",
+    "downloadUpdate": "تحميل التحديث",
+    "currentVersion": "الإصدار الحالي",
+    "latestVersion": "أحدث إصدار",
+    "sync": {
+      "title": "مزامنة البيانات",
+      "syncNow": "مزامنة الآن",
+      "lastSync": "آخر مزامنة",
+      "never": "أبداً",
+      "syncing": "جاري المزامنة...",
+      "success": "تمت المزامنة بنجاح",
+      "offline": "غير متصل - المزامنة غير متوفرة"
+    },
+    "backup": {
+      "title": "النسخ الاحتياطي والاستعادة",
+      "export": "تصدير نسخة احتياطية",
+      "import": "استيراد نسخة احتياطية"
+    },
+    "database": "موقع قاعدة البيانات"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث...",
+    "add": "إضافة",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "success": "نجاح",
+    "error": "خطأ",
+    "warning": "تحذير",
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات",
+    "actions": "الإجراءات",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "required": "مطلوب",
+    "optional": "اختياري"
+  },
+  "messages": {
+    "confirmDelete": "هل أنت متأكد من حذف هذا العنصر؟",
+    "savedSuccess": "تم الحفظ بنجاح",
+    "deletedSuccess": "تم الحذف بنجاح",
+    "updateSuccess": "تم التحديث بنجاح",
+    "errorOccurred": "حدث خطأ",
+    "offlineMode": "أنت حالياً غير متصل بالإنترنت"
+  }
+}

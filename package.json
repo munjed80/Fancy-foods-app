@@ -1,7 +1,7 @@
 {
   "name": "fancyfoods-app",
-  "version": "1.0.0",
-  "description": "FancyFoods Manager - Desktop app for managing wholesale nuts and seeds business",
+  "version": "2.0.0",
+  "description": "FancyFoods Manager v2 - Smart Local-First business manager for wholesale nuts/snacks trading",
   "main": "main.js",
   "author": "Fancy Foods",
   "license": "MIT",
@@ -15,10 +15,11 @@
   },
   "dependencies": {
     "archiver": "^6.0.1",
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^7.6.2",
     "bootstrap": "^5.3.2",
     "extract-zip": "^2.0.1",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^6.9.8",
+    "pdfkit": "^0.14.0"
   },
   "devDependencies": {
     "electron": "^29.4.6",
@@ -34,24 +35,35 @@
       "main.js",
       "preload.js",
       "renderer/**/*",
+      "locales/**/*",
       "database/**/*",
       "attachments/**/*",
       "emails/**/*",
       "backup/**/*",
       "!node_modules/.cache/**"
     ],
+    "extraResources": [
+      {
+        "from": "locales",
+        "to": "locales"
+      }
+    ],
     "asarUnpack": [
       "node_modules/better-sqlite3/**/*.node"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "renderer/assets/icon.ico"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "renderer/assets/icon.icns"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }
