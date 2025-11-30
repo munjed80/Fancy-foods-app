@@ -34,6 +34,21 @@ let appSettings = {
     lastSync: null
 };
 
+function ensureColumn(db, table, columnDef) {
+    try {
+        db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`);
+        console.log(`Migration: added column ${columnDef} to ${table}`);
+    } catch (e) {
+        const message = String(e.message).toLowerCase();
+        if (message.includes('duplicate column name') || message.includes('already exists')) {
+            console.log(`Migration: column ${columnDef} already exists in ${table}`);
+        } else {
+            console.error('Migration error on', table, columnDef, e);
+            throw e;
+        }
+    }
+}
+
 function initializeDatabase() {
     db = new Database(dbFile);
     
@@ -42,6 +57,7 @@ function initializeDatabase() {
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            ar TEXT,
             category TEXT DEFAULT 'nuts',
             unit TEXT DEFAULT 'kg',
             price REAL DEFAULT 0,
@@ -53,25 +69,12 @@ function initializeDatabase() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
-    
+
     // Add stock columns if they don't exist (migration for existing databases)
-    try {
-        db.exec(`ALTER TABLE products ADD COLUMN stock REAL DEFAULT 0`);
-    } catch (e) { /* Column exists */ }
-    try {
-        db.exec(`ALTER TABLE products ADD COLUMN min_stock REAL DEFAULT 0`);
-    } catch (e) { /* Column exists */ }
-    try {
-        db.exec(`ALTER TABLE products ADD COLUMN location TEXT DEFAULT 'Main Warehouse'`);
-    } catch (e) { /* Column exists */ }
-    
-    // Add Arabic language column for multi-language support
-    try {
-        db.exec(`ALTER TABLE products ADD COLUMN ar TEXT`);
-        console.log('Migration: Added "ar" column to products table');
-    } catch (e) {
-        console.log('Migration: "ar" column already exists in products table');
-    }
+    ensureColumn(db, 'products', "stock REAL DEFAULT 0");
+    ensureColumn(db, 'products', "min_stock REAL DEFAULT 0");
+    ensureColumn(db, 'products', "location TEXT DEFAULT 'Main Warehouse'");
+    ensureColumn(db, 'products', 'ar TEXT');
     
     // Suppliers table (NEW)
     db.exec(`
@@ -105,6 +108,7 @@ function initializeDatabase() {
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            ar TEXT,
             phone TEXT,
             whatsapp TEXT,
             address TEXT,
@@ -116,25 +120,12 @@ function initializeDatabase() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
-    
+
     // Add new columns if they don't exist (migration)
-    try {
-        db.exec(`ALTER TABLE clients ADD COLUMN address TEXT`);
-    } catch (e) { /* Column exists */ }
-    try {
-        db.exec(`ALTER TABLE clients ADD COLUMN financial_status TEXT DEFAULT 'good'`);
-    } catch (e) { /* Column exists */ }
-    try {
-        db.exec(`ALTER TABLE clients ADD COLUMN credit_limit REAL DEFAULT 0`);
-    } catch (e) { /* Column exists */ }
-    
-    // Add Arabic language column for multi-language support
-    try {
-        db.exec(`ALTER TABLE clients ADD COLUMN ar TEXT`);
-        console.log('Migration: Added "ar" column to clients table');
-    } catch (e) {
-        console.log('Migration: "ar" column already exists in clients table');
-    }
+    ensureColumn(db, 'clients', 'address TEXT');
+    ensureColumn(db, 'clients', "financial_status TEXT DEFAULT 'good'");
+    ensureColumn(db, 'clients', 'credit_limit REAL DEFAULT 0');
+    ensureColumn(db, 'clients', 'ar TEXT');
     
     // Deals table (replaces broker_deals with enhanced workflow)
     db.exec(`
@@ -291,11 +282,9 @@ function initializeDatabase() {
             auto_update INTEGER DEFAULT 1
         )
     `);
-    
+
     // Add currency column if not exists
-    try {
-        db.exec(`ALTER TABLE app_settings ADD COLUMN currency TEXT DEFAULT 'SYP'`);
-    } catch (e) { /* Column exists */ }
+    ensureColumn(db, 'app_settings', "currency TEXT DEFAULT 'SYP'");
     
     const existingAppSettings = db.prepare('SELECT id FROM app_settings WHERE id = 1').get();
     if (!existingAppSettings) {
