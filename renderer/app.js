@@ -8,7 +8,7 @@ let dealsData = [];
 let shipmentsData = [];
 let emailTemplates = [];
 let todoItems = [];
-let currentLanguage = 'ar';
+let currentLanguage = 'en';
 let currentCurrency = 'SYP';
 let translations = {};
 let currentDealId = null;
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadLanguage() {
     try {
         const settings = await window.api.settings.get();
-        currentLanguage = settings.language || 'ar';
+        currentLanguage = settings.language || 'en';
         currentCurrency = settings.currency || 'SYP';
         // Load translation file
         const response = await fetch(`../locales/${currentLanguage}.json`);
@@ -239,7 +239,13 @@ function setupEventListeners() {
 
     const currencySelect = document.getElementById('currency-select');
     if (currencySelect) currencySelect.addEventListener('change', changeCurrency);
-    
+
+    const btnSettingsSave = document.getElementById('btn-settings-save');
+    if (btnSettingsSave) btnSettingsSave.addEventListener('click', saveSettingsChanges);
+
+    const btnSettingsClose = document.getElementById('btn-settings-close');
+    if (btnSettingsClose) btnSettingsClose.addEventListener('click', closeSettings);
+
     const btnSettingsExport = document.getElementById('btn-settings-export');
     const btnSettingsImport = document.getElementById('btn-settings-import');
     if (btnSettingsExport) btnSettingsExport.addEventListener('click', exportBackup);
@@ -893,8 +899,8 @@ async function saveEmailTemplate() {
 async function loadSettings() {
     const settings = await window.api.settings.get();
     const langSelect = document.getElementById('language-select');
-    if (langSelect) langSelect.value = settings.language || 'ar';
-    syncLanguageControls(settings.language || 'ar');
+    if (langSelect) langSelect.value = settings.language || 'en';
+    syncLanguageControls(settings.language || 'en');
     
     const currencySelect = document.getElementById('currency-select');
     if (currencySelect) currencySelect.value = settings.currency || 'SYP';
@@ -909,20 +915,38 @@ async function loadSettings() {
 async function changeLanguage(langOrEvent) {
     const lang = typeof langOrEvent === 'string'
         ? langOrEvent
-        : document.getElementById('language-select')?.value || 'ar';
+        : document.getElementById('language-select')?.value || 'en';
     await window.api.settings.setLanguage(lang);
     currentLanguage = lang;
     await loadLanguage();
     syncLanguageControls(lang);
-    showToast('نجاح', 'تم تغيير اللغة');
+    const languageChangedMessage = currentLanguage === 'ar' ? 'تم تغيير اللغة' : 'Language changed';
+    showToast(t('common.success'), languageChangedMessage);
 }
 
 async function changeCurrency() {
     const currency = document.getElementById('currency-select').value;
     await window.api.settings.setCurrency(currency);
     currentCurrency = currency;
-    showToast('نجاح', 'تم تغيير العملة');
+    showToast(t('common.success'), currentLanguage === 'ar' ? 'تم تغيير العملة' : 'Currency changed');
     // Refresh current module to update currency display
+    showModule('dashboard');
+}
+
+async function saveSettingsChanges() {
+    const language = document.getElementById('language-select')?.value || currentLanguage || 'en';
+    const currency = document.getElementById('currency-select')?.value || currentCurrency || 'SYP';
+
+    await window.api.settings.save({ language, currency });
+    currentLanguage = language;
+    currentCurrency = currency;
+    await loadLanguage();
+
+    const savedMessage = t('settings.saved') || (currentLanguage === 'ar' ? 'تم حفظ الإعدادات' : 'Settings saved');
+    showToast(t('common.success'), savedMessage);
+}
+
+function closeSettings() {
     showModule('dashboard');
 }
 
