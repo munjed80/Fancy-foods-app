@@ -126,6 +126,51 @@ body {
     min-height: 100vh;
 }
 
+.app-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 30px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quick-links {
+    display: flex;
+    gap: 8px;
+}
+
+.language-toggle {
+    display: inline-flex;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.language-toggle .btn {
+    border: none;
+    border-radius: 0;
+    padding: 6px 12px;
+    color: var(--text-primary);
+}
+
+.language-toggle .btn.active,
+.language-toggle .btn:focus {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: none;
+}
+
 /* Module Sections */
 .module-section {
     display: none;

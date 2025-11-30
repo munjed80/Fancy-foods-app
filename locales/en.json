@@ -1,17 +1,22 @@
 {
   "app": {
     "title": "FancyFoods Manager",
-    "version": "Version"
+    "version": "Version",
+    "subtitle": "Integrated operations hub for FancyFoods",
+    "companyName": "FancyFoods"
   },
   "nav": {
     "dashboard": "Dashboard",
-    "deals": "Deals",
+    "deals": "Deals & Brokerage",
     "inventory": "Inventory",
-    "logistics": "Logistics",
+    "products": "Products",
+    "logistics": "Inventory & Logistics",
     "suppliers": "Suppliers",
     "clients": "Clients",
     "emailCenter": "Email Center",
-    "settings": "Settings"
+    "settings": "Settings",
+    "tasks": "Tasks",
+    "about": "About"
   },
   "dashboard": {
     "title": "Daily Workflow Dashboard",
@@ -23,6 +28,13 @@
     "recentOrders": "Recent Pending Orders",
     "openBrokerDeals": "Open Broker Deals",
     "dailyChecklist": "Daily Checklist",
+    "quickOverview": "Quick overview",
+    "quickSummary": "Track your day from the home dashboard, then jump into Tasks for the full checklist.",
+    "summary": {
+      "tasks": "Open tasks",
+      "lowStock": "Stock alerts",
+      "pendingDeals": "Pending deals"
+    },
     "noOrders": "No pending orders",
     "noDeals": "No open deals",
     "checklistItems": {
@@ -32,6 +44,20 @@
       "step4": "Step 4: Prepare shipments",
       "step5": "Step 5: Contact traders"
     }
+  },
+  "tasks": {
+    "title": "Daily Tasks",
+    "subtitle": "Daily workflow steps and the living todo list"
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "Release info, support, and UI direction",
+    "version": "App Version",
+    "currentVersion": "Current version:",
+    "runtime": "The same information is shown in development and production to keep reviews consistent.",
+    "languageDirection": "Language & direction",
+    "languageHelp": "Toggle instantly between Arabic and English from any screen. Your choice is saved automatically.",
+    "persistent": "The selection is remembered after relaunch so the installed build matches your preference."
   },
   "deals": {
     "title": "Deals Management",
@@ -112,6 +138,9 @@
       "bag": "Bag"
     },
     "lowStock": "Low Stock Alert"
+  },
+  "products": {
+    "title": "Product Management"
   },
   "logistics": {
     "title": "Logistics Management",
