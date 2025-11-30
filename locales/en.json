@@ -253,7 +253,8 @@
       "export": "Export Backup",
       "import": "Import Backup"
     },
-    "database": "Database Location"
+    "database": "Database Location",
+    "saved": "Settings saved"
   },
   "common": {
     "save": "Save",

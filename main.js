@@ -47,7 +47,7 @@ let mainWindow;
 
 // App settings stored in memory
 let appSettings = {
-    language: 'ar',
+    language: 'en',
     currency: 'SYP',
     lastSync: null
 };
@@ -248,7 +248,7 @@ async function initializeDatabase() {
             db.exec(`
                 CREATE TABLE IF NOT EXISTS app_settings (
                     id INTEGER PRIMARY KEY CHECK (id = 1),
-                    language TEXT DEFAULT 'ar',
+                    language TEXT DEFAULT 'en',
                     currency TEXT DEFAULT 'SYP',
                     last_sync TEXT,
                     auto_update INTEGER DEFAULT 1
@@ -307,7 +307,7 @@ async function initializeDatabase() {
 
             const existingAppSettings = db.prepare('SELECT id FROM app_settings WHERE id = 1').get();
             if (!existingAppSettings) {
-                db.prepare('INSERT INTO app_settings (id, language, currency) VALUES (1, "ar", "SYP")').run();
+                db.prepare('INSERT INTO app_settings (id, language, currency) VALUES (1, "en", "SYP")').run();
             }
         });
 
@@ -321,7 +321,7 @@ async function initializeDatabase() {
     try {
         const savedSettings = db.prepare('SELECT * FROM app_settings WHERE id = 1').get();
         if (savedSettings) {
-            appSettings.language = savedSettings.language || 'ar';
+            appSettings.language = savedSettings.language || 'en';
             appSettings.currency = savedSettings.currency || 'SYP';
             appSettings.lastSync = savedSettings.last_sync;
         }
@@ -1441,7 +1441,7 @@ function copyDirRecursive(src, dest) {
 ipcMain.handle('settings:get', () => {
     const settings = db.prepare('SELECT * FROM app_settings WHERE id = 1').get();
     return {
-        language: settings?.language || 'ar',
+        language: settings?.language || 'en',
         currency: settings?.currency || 'SYP',
         lastSync: settings?.last_sync,
         autoUpdate: settings?.auto_update === 1
