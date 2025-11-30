@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "archiver": "^6.0.1",
-    "better-sqlite3": "^7.6.2",
+    "better-sqlite3": "^9.6.0",
     "bootstrap": "^5.3.2",
     "extract-zip": "^2.0.1",
     "nodemailer": "^6.9.8",
@@ -40,6 +40,7 @@
       "attachments/**/*",
       "emails/**/*",
       "backup/**/*",
+      "node_modules/**/*",
       "!node_modules/.cache/**"
     ],
     "extraResources": [
@@ -49,7 +50,7 @@
       }
     ],
     "asarUnpack": [
-      "node_modules/better-sqlite3/**/*.node"
+      "node_modules/better-sqlite3/**"
     ],
     "win": {
       "target": "nsis",
