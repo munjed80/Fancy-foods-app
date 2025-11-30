@@ -8,22 +8,40 @@ const extract = require('extract-zip');
 const PDFDocument = require('pdfkit');
 const https = require('https');
 
-// Paths
-const userDataPath = app.getPath('userData');
-const databasePath = path.join(userDataPath, 'database');
-const attachmentsPath = path.join(userDataPath, 'attachments');
-const emailsPath = path.join(userDataPath, 'emails');
-const backupPath = path.join(userDataPath, 'backup');
-const pdfsPath = path.join(userDataPath, 'pdfs');
+const FORCE_PACKAGED_ENV = process.env.ELECTRON_FORCE_IS_PACKAGED === 'true' || process.env.ELECTRON_IS_DEV === '0';
+const isPackagedLike = () => app.isPackaged || FORCE_PACKAGED_ENV;
 
-// Ensure directories exist
-[databasePath, attachmentsPath, emailsPath, backupPath, pdfsPath].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-});
+let cachedPaths;
+function getAppPaths() {
+    if (cachedPaths) return cachedPaths;
+    const userDataPath = app.getPath('userData');
+    cachedPaths = {
+        userDataPath,
+        databasePath: path.join(userDataPath, 'database'),
+        attachmentsPath: path.join(userDataPath, 'attachments'),
+        emailsPath: path.join(userDataPath, 'emails'),
+        backupPath: path.join(userDataPath, 'backup'),
+        pdfsPath: path.join(userDataPath, 'pdfs'),
+    };
+    cachedPaths.dbFile = path.join(cachedPaths.databasePath, 'fancyfoods.db');
+    return cachedPaths;
+}
 
-const dbFile = path.join(databasePath, 'fancyfoods.db');
+function getDatabasePath() {
+    return getAppPaths().dbFile;
+}
+
+function ensureDataDirectories() {
+    const { databasePath, attachmentsPath, emailsPath, backupPath, pdfsPath } = getAppPaths();
+    [databasePath, attachmentsPath, emailsPath, backupPath, pdfsPath].forEach(dir => {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    });
+}
+
+const { databasePath, attachmentsPath, emailsPath, backupPath, pdfsPath } = getAppPaths();
+const dbFile = getDatabasePath();
 let db;
 let mainWindow;
 
@@ -50,248 +68,263 @@ function ensureColumn(db, table, columnDef) {
 }
 
 function initializeDatabase() {
-    db = new Database(dbFile);
-    
-    // Products table with extended fields for inventory
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            ar TEXT,
-            category TEXT DEFAULT 'nuts',
-            unit TEXT DEFAULT 'kg',
-            price REAL DEFAULT 0,
-            stock REAL DEFAULT 0,
-            min_stock REAL DEFAULT 0,
-            location TEXT DEFAULT 'Main Warehouse',
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
+    ensureDataDirectories();
+    const dbPath = getDatabasePath();
+    console.log(`Initializing database at: ${dbPath}`);
+    db = new Database(dbPath);
 
-    // Add stock columns if they don't exist (migration for existing databases)
-    ensureColumn(db, 'products', "stock REAL DEFAULT 0");
-    ensureColumn(db, 'products', "min_stock REAL DEFAULT 0");
-    ensureColumn(db, 'products', "location TEXT DEFAULT 'Main Warehouse'");
-    ensureColumn(db, 'products', 'ar TEXT');
-    
-    // Suppliers table (NEW)
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS suppliers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            location TEXT,
-            phone TEXT,
-            email TEXT,
-            lead_time INTEGER DEFAULT 7,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    // Supplier products table (NEW) - links suppliers to products with prices
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS supplier_products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            supplier_id INTEGER NOT NULL,
-            product_name TEXT NOT NULL,
-            price REAL DEFAULT 0,
-            available_stock REAL DEFAULT 0,
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
-        )
-    `);
-    
-    // Clients table with extended fields
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS clients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            ar TEXT,
-            phone TEXT,
-            whatsapp TEXT,
-            address TEXT,
-            city TEXT,
-            financial_status TEXT DEFAULT 'good',
-            credit_limit REAL DEFAULT 0,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
+    const migrate = db.transaction(() => {
+        // Products table with extended fields for inventory
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                ar TEXT,
+                category TEXT DEFAULT 'nuts',
+                unit TEXT DEFAULT 'kg',
+                price REAL DEFAULT 0,
+                stock REAL DEFAULT 0,
+                min_stock REAL DEFAULT 0,
+                location TEXT DEFAULT 'Main Warehouse',
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
-    // Add new columns if they don't exist (migration)
-    ensureColumn(db, 'clients', 'address TEXT');
-    ensureColumn(db, 'clients', "financial_status TEXT DEFAULT 'good'");
-    ensureColumn(db, 'clients', 'credit_limit REAL DEFAULT 0');
-    ensureColumn(db, 'clients', 'ar TEXT');
-    
-    // Deals table (replaces broker_deals with enhanced workflow)
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS deals (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            client_id INTEGER,
-            supplier_id INTEGER,
-            product TEXT NOT NULL,
-            quantity REAL DEFAULT 0,
-            price_per_ton REAL DEFAULT 0,
-            total_value REAL DEFAULT 0,
-            commission_rate REAL DEFAULT 2.5,
-            commission REAL DEFAULT 0,
-            stage TEXT DEFAULT 'offer',
-            status TEXT DEFAULT 'draft',
-            offer_date DATE,
-            order_date DATE,
-            delivery_date DATE,
-            payment_date DATE,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (client_id) REFERENCES clients(id),
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-        )
-    `);
-    
-    // Migrate from broker_deals if exists
-    const brokerDealsExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='broker_deals'").get();
-    if (brokerDealsExists) {
-        const oldDeals = db.prepare('SELECT * FROM broker_deals').all();
-        if (oldDeals.length > 0) {
-            const insertDeal = db.prepare(`
-                INSERT OR IGNORE INTO deals (id, product, quantity, price_per_ton, status, notes, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `);
-            for (const deal of oldDeals) {
-                insertDeal.run(deal.id, deal.product, deal.quantity, deal.price_per_ton, 
-                    deal.status === 'open' ? 'draft' : 'completed', deal.notes, deal.created_at);
+        // Add stock columns if they don't exist (migration for existing databases)
+        ensureColumn(db, 'products', "stock REAL DEFAULT 0");
+        ensureColumn(db, 'products', "min_stock REAL DEFAULT 0");
+        ensureColumn(db, 'products', "location TEXT DEFAULT 'Main Warehouse'");
+        ensureColumn(db, 'products', 'ar TEXT');
+
+        // Suppliers table (NEW)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS suppliers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                location TEXT,
+                phone TEXT,
+                email TEXT,
+                lead_time INTEGER DEFAULT 7,
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Supplier products table (NEW) - links suppliers to products with prices
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS supplier_products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                supplier_id INTEGER NOT NULL,
+                product_name TEXT NOT NULL,
+                price REAL DEFAULT 0,
+                available_stock REAL DEFAULT 0,
+                FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Clients table with extended fields
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS clients (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                ar TEXT,
+                phone TEXT,
+                whatsapp TEXT,
+                address TEXT,
+                city TEXT,
+                financial_status TEXT DEFAULT 'good',
+                credit_limit REAL DEFAULT 0,
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Add new columns if they don't exist (migration)
+        ensureColumn(db, 'clients', 'address TEXT');
+        ensureColumn(db, 'clients', "financial_status TEXT DEFAULT 'good'");
+        ensureColumn(db, 'clients', 'credit_limit REAL DEFAULT 0');
+        ensureColumn(db, 'clients', 'ar TEXT');
+
+        // Deals table (replaces broker_deals with enhanced workflow)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS deals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id INTEGER,
+                supplier_id INTEGER,
+                product TEXT NOT NULL,
+                quantity REAL DEFAULT 0,
+                price_per_ton REAL DEFAULT 0,
+                total_value REAL DEFAULT 0,
+                commission_rate REAL DEFAULT 2.5,
+                commission REAL DEFAULT 0,
+                stage TEXT DEFAULT 'offer',
+                status TEXT DEFAULT 'draft',
+                offer_date DATE,
+                order_date DATE,
+                delivery_date DATE,
+                payment_date DATE,
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (client_id) REFERENCES clients(id),
+                FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+            )
+        `);
+        ensureColumn(db, 'deals', 'commission_rate REAL DEFAULT 2.5');
+        ensureColumn(db, 'deals', 'commission REAL DEFAULT 0');
+        ensureColumn(db, 'deals', "stage TEXT DEFAULT 'offer'");
+        ensureColumn(db, 'deals', "status TEXT DEFAULT 'draft'");
+        ensureColumn(db, 'deals', 'offer_date DATE');
+        ensureColumn(db, 'deals', 'order_date DATE');
+        ensureColumn(db, 'deals', 'delivery_date DATE');
+        ensureColumn(db, 'deals', 'payment_date DATE');
+
+        // Migrate from broker_deals if exists
+        const brokerDealsExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='broker_deals'").get();
+        if (brokerDealsExists) {
+            const oldDeals = db.prepare('SELECT * FROM broker_deals').all();
+            if (oldDeals.length > 0) {
+                const insertDeal = db.prepare(`
+                    INSERT OR IGNORE INTO deals (id, product, quantity, price_per_ton, status, notes, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `);
+                for (const deal of oldDeals) {
+                    insertDeal.run(deal.id, deal.product, deal.quantity, deal.price_per_ton,
+                        deal.status === 'open' ? 'draft' : 'completed', deal.notes, deal.created_at);
+                }
             }
         }
-    }
-    
-    // Shipments table (NEW)
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS shipments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            deal_id INTEGER,
-            origin TEXT,
-            destination TEXT,
-            carrier TEXT,
-            tracking_number TEXT,
-            eta DATE,
-            status TEXT DEFAULT 'pending',
-            transport_notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
-        )
-    `);
-    
-    // Storage locations table (NEW)
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS storage_locations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            address TEXT,
-            capacity REAL DEFAULT 0,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    // Insert default storage location if none exists
-    const locCount = db.prepare('SELECT COUNT(*) as count FROM storage_locations').get();
-    if (locCount.count === 0) {
-        db.prepare("INSERT INTO storage_locations (name, address) VALUES ('Main Warehouse', 'Default Location')").run();
-    }
-    
-    // Orders table
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            client_id INTEGER,
-            order_date DATE DEFAULT CURRENT_DATE,
-            total_price REAL DEFAULT 0,
-            status TEXT DEFAULT 'pending',
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (client_id) REFERENCES clients(id)
-        )
-    `);
-    
-    // Order items table
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS order_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            order_id INTEGER NOT NULL,
-            product_id INTEGER,
-            quantity REAL DEFAULT 0,
-            price REAL DEFAULT 0,
-            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-            FOREIGN KEY (product_id) REFERENCES products(id)
-        )
-    `);
-    
-    // Email templates table
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS email_templates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            subject TEXT,
-            body TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    // SMTP settings table
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS smtp_settings (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            host TEXT DEFAULT 'smtp-mail.outlook.com',
-            port INTEGER DEFAULT 587,
-            secure INTEGER DEFAULT 0,
-            user TEXT,
-            pass TEXT
-        )
-    `);
-    
-    // Insert default SMTP settings if not exists
-    const existingSettings = db.prepare('SELECT id FROM smtp_settings WHERE id = 1').get();
-    if (!existingSettings) {
-        db.prepare('INSERT INTO smtp_settings (id) VALUES (1)').run();
-    }
-    
-    // Todo list table for simple task management
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS todo_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            completed INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    // App settings table (NEW)
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS app_settings (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            language TEXT DEFAULT 'ar',
-            currency TEXT DEFAULT 'SYP',
-            last_sync TEXT,
-            auto_update INTEGER DEFAULT 1
-        )
-    `);
 
-    // Add currency column if not exists
-    ensureColumn(db, 'app_settings', "currency TEXT DEFAULT 'SYP'");
-    
-    const existingAppSettings = db.prepare('SELECT id FROM app_settings WHERE id = 1').get();
-    if (!existingAppSettings) {
-        db.prepare('INSERT INTO app_settings (id, language, currency) VALUES (1, "ar", "SYP")').run();
-    }
-    
-    // Load app settings
+        // Shipments table (NEW)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS shipments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                deal_id INTEGER,
+                origin TEXT,
+                destination TEXT,
+                carrier TEXT,
+                tracking_number TEXT,
+                eta DATE,
+                status TEXT DEFAULT 'pending',
+                transport_notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Storage locations table (NEW)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS storage_locations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                address TEXT,
+                capacity REAL DEFAULT 0,
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Insert default storage location if none exists
+        const locCount = db.prepare('SELECT COUNT(*) as count FROM storage_locations').get();
+        if (locCount.count === 0) {
+            db.prepare("INSERT INTO storage_locations (name, address) VALUES ('Main Warehouse', 'Default Location')").run();
+        }
+
+        // Orders table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id INTEGER,
+                order_date DATE DEFAULT CURRENT_DATE,
+                total_price REAL DEFAULT 0,
+                status TEXT DEFAULT 'pending',
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (client_id) REFERENCES clients(id)
+            )
+        `);
+
+        // Order items table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                product_id INTEGER,
+                quantity REAL DEFAULT 0,
+                price REAL DEFAULT 0,
+                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id)
+            )
+        `);
+
+        // Email templates table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS email_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                subject TEXT,
+                body TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // SMTP settings table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS smtp_settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                host TEXT DEFAULT 'smtp-mail.outlook.com',
+                port INTEGER DEFAULT 587,
+                secure INTEGER DEFAULT 0,
+                user TEXT,
+                pass TEXT
+            )
+        `);
+
+        // Insert default SMTP settings if not exists
+        const existingSettings = db.prepare('SELECT id FROM smtp_settings WHERE id = 1').get();
+        if (!existingSettings) {
+            db.prepare('INSERT INTO smtp_settings (id) VALUES (1)').run();
+        }
+
+        // Todo list table for simple task management
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS todo_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                text TEXT NOT NULL,
+                completed INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // App settings table (NEW)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS app_settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                language TEXT DEFAULT 'ar',
+                currency TEXT DEFAULT 'SYP',
+                last_sync TEXT,
+                auto_update INTEGER DEFAULT 1
+            )
+        `);
+
+        // Add currency column if not exists
+        ensureColumn(db, 'app_settings', "currency TEXT DEFAULT 'SYP'");
+
+        const existingAppSettings = db.prepare('SELECT id FROM app_settings WHERE id = 1').get();
+        if (!existingAppSettings) {
+            db.prepare('INSERT INTO app_settings (id, language, currency) VALUES (1, "ar", "SYP")').run();
+        }
+    });
+
+    migrate();
+
+    // Load app settings after migrations are done
     const savedSettings = db.prepare('SELECT * FROM app_settings WHERE id = 1').get();
     if (savedSettings) {
         appSettings.language = savedSettings.language || 'ar';
@@ -319,26 +352,49 @@ function createWindow() {
     if (fs.existsSync(iconPath)) {
         windowOptions.icon = iconPath;
     }
-    
+
     mainWindow = new BrowserWindow(windowOptions);
 
     mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
-    
+
     // Open DevTools in development
-    if (process.env.NODE_ENV === 'development') {
+    if (!isPackagedLike() && process.env.NODE_ENV === 'development') {
         mainWindow.webContents.openDevTools();
     }
 }
 
-app.whenReady().then(() => {
-    initializeDatabase();
-    createWindow();
+async function startApp() {
+    try {
+        initializeDatabase();
+        createWindow();
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0) {
+                createWindow();
+            }
+        });
+    } catch (error) {
+        console.error('Startup error:', error);
+        dialog.showErrorBox('Startup Error', `${error.message}\n\nDatabase path: ${getDatabasePath()}`);
+        app.quit();
+    }
+}
+
+app.whenReady().then(startApp).catch(error => {
+    console.error('Unhandled startup rejection:', error);
+    dialog.showErrorBox('Startup Error', error.message || 'Unknown error');
+    app.quit();
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught exception:', error);
+    if (app && typeof app.isReady === 'function' && app.isReady()) {
+        dialog.showErrorBox('Unexpected Error', error.message || 'Unknown error');
+    }
 });
 
 app.on('window-all-closed', () => {

@@ -11,7 +11,8 @@
     "rebuild": "electron-builder install-app-deps",
     "build": "electron-builder",
     "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac"
+    "build:mac": "electron-builder --mac",
+    "start:prod": "ELECTRON_FORCE_IS_PACKAGED=true NODE_ENV=production electron ."
   },
   "dependencies": {
     "archiver": "^6.0.1",
