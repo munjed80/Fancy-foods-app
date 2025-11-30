@@ -65,6 +65,14 @@ function initializeDatabase() {
         db.exec(`ALTER TABLE products ADD COLUMN location TEXT DEFAULT 'Main Warehouse'`);
     } catch (e) { /* Column exists */ }
     
+    // Add Arabic language column for multi-language support
+    try {
+        db.exec(`ALTER TABLE products ADD COLUMN ar TEXT`);
+        console.log('Migration: Added "ar" column to products table');
+    } catch (e) {
+        console.log('Migration: "ar" column already exists in products table');
+    }
+    
     // Suppliers table (NEW)
     db.exec(`
         CREATE TABLE IF NOT EXISTS suppliers (
@@ -119,6 +127,14 @@ function initializeDatabase() {
     try {
         db.exec(`ALTER TABLE clients ADD COLUMN credit_limit REAL DEFAULT 0`);
     } catch (e) { /* Column exists */ }
+    
+    // Add Arabic language column for multi-language support
+    try {
+        db.exec(`ALTER TABLE clients ADD COLUMN ar TEXT`);
+        console.log('Migration: Added "ar" column to clients table');
+    } catch (e) {
+        console.log('Migration: "ar" column already exists in clients table');
+    }
     
     // Deals table (replaces broker_deals with enhanced workflow)
     db.exec(`
