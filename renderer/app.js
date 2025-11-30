@@ -30,18 +30,16 @@ async function loadLanguage() {
         const settings = await window.api.settings.get();
         currentLanguage = settings.language || 'ar';
         currentCurrency = settings.currency || 'SYP';
-        
-        const langSelect = document.getElementById('language-select');
-        if (langSelect) langSelect.value = currentLanguage;
-        
         // Load translation file
         const response = await fetch(`../locales/${currentLanguage}.json`);
         translations = await response.json();
-        
+
         // Set document direction for RTL languages
         document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = currentLanguage;
-        
+
+        syncLanguageControls(currentLanguage);
+
         applyTranslations();
     } catch (error) {
         console.error('Error loading language:', error);
@@ -64,9 +62,18 @@ function t(key) {
     return getNestedTranslation(key) || key;
 }
 
+function syncLanguageControls(lang) {
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.value = lang;
+
+    document.querySelectorAll('#language-toggle [data-lang]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+}
+
 // ============ NAVIGATION ============
 function setupNavigation() {
-    document.querySelectorAll('.nav-link[data-module]').forEach(link => {
+    document.querySelectorAll('[data-module]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             showModule(link.dataset.module);
@@ -81,16 +88,24 @@ function showModule(moduleName) {
     document.querySelectorAll('.module-section').forEach(section => {
         section.classList.toggle('active', section.id === `module-${moduleName}`);
     });
-    
+
     switch (moduleName) {
         case 'dashboard': loadDashboardData(); break;
         case 'deals': loadDeals(); break;
-        case 'inventory': loadProducts(); break;
+        case 'products':
+        case 'inventory':
+            loadProducts(); break;
         case 'logistics': loadLogistics(); break;
         case 'suppliers': loadSuppliers(); break;
         case 'clients': loadClients(); break;
         case 'email': loadEmailData(); break;
         case 'settings': loadSettings(); break;
+        case 'tasks':
+            loadTodoList();
+            break;
+        case 'about':
+            displayAppVersion();
+            break;
     }
 }
 
@@ -113,8 +128,12 @@ async function displayAppVersion() {
         const version = await window.api.app.getVersion();
         document.getElementById('app-version').textContent = `v${version}`;
         document.getElementById('current-version').textContent = version;
+        const aboutVersion = document.getElementById('about-version');
+        if (aboutVersion) aboutVersion.textContent = version;
     } catch (error) {
         document.getElementById('app-version').textContent = 'v2.0.0';
+        const aboutVersion = document.getElementById('about-version');
+        if (aboutVersion) aboutVersion.textContent = '2.0.0';
     }
 }
 
@@ -213,7 +232,11 @@ function setupEventListeners() {
     // Settings
     const langSelect = document.getElementById('language-select');
     if (langSelect) langSelect.addEventListener('change', changeLanguage);
-    
+
+    document.querySelectorAll('#language-toggle [data-lang]').forEach(btn => {
+        btn.addEventListener('click', () => changeLanguage(btn.dataset.lang));
+    });
+
     const currencySelect = document.getElementById('currency-select');
     if (currencySelect) currencySelect.addEventListener('change', changeCurrency);
     
@@ -276,7 +299,12 @@ async function loadDashboardData() {
         document.getElementById('stat-clients').textContent = data.totalClients;
         document.getElementById('stat-suppliers').textContent = data.totalSuppliers;
         document.getElementById('stat-open-deals').textContent = data.openDealsCount;
-        
+
+        const lowStockBadge = document.getElementById('summary-low-stock');
+        if (lowStockBadge) lowStockBadge.textContent = data.lowStockCount || 0;
+        const pendingDealsBadge = document.getElementById('summary-open-deals');
+        if (pendingDealsBadge) pendingDealsBadge.textContent = data.openDealsCount || 0;
+
         if (data.lowStockCount > 0) {
             document.getElementById('low-stock-alert').style.display = 'block';
             document.getElementById('low-stock-count').textContent = data.lowStockCount;
@@ -285,7 +313,7 @@ async function loadDashboardData() {
         document.getElementById('open-deals-list').innerHTML = data.openBrokerDeals.length > 0
             ? data.openBrokerDeals.map(d => `<div class="list-group-item"><strong>${escapeHtml(d.product)}</strong> - ${d.quantity} طن ${getStageBadge(d.stage)}</div>`).join('')
             : '<p class="text-muted text-center">لا توجد صفقات مفتوحة</p>';
-        
+
         // Load todo list
         await loadTodoList();
     } catch (error) {
@@ -306,12 +334,13 @@ async function loadTodoList() {
 function renderTodoList() {
     const container = document.getElementById('todo-list');
     if (!container) return;
-    
+
     if (todoItems.length === 0) {
         container.innerHTML = '<p class="text-muted text-center small">لا توجد مهام</p>';
+        updateTaskBadges();
         return;
     }
-    
+
     container.innerHTML = todoItems.map(item => `
         <div class="list-group-item d-flex justify-content-between align-items-center ${item.completed ? 'text-decoration-line-through text-muted' : ''}">
             <div class="form-check">
@@ -321,6 +350,7 @@ function renderTodoList() {
             <button class="btn btn-sm btn-outline-danger" onclick="deleteTodoItem(${item.id})">×</button>
         </div>
     `).join('');
+    updateTaskBadges();
 }
 
 async function addTodoItem() {
@@ -354,6 +384,15 @@ window.deleteTodoItem = async (id) => {
         showToast('خطأ', 'فشل في حذف المهمة');
     }
 };
+
+function updateTaskBadges() {
+    const count = todoItems.length;
+    const tasksCount = document.getElementById('tasks-count');
+    if (tasksCount) tasksCount.textContent = count;
+
+    const summaryTasks = document.getElementById('summary-open-tasks');
+    if (summaryTasks) summaryTasks.textContent = count;
+}
 
 // ============ PRODUCTS (INVENTORY) ============
 async function loadProducts() {
@@ -855,6 +894,7 @@ async function loadSettings() {
     const settings = await window.api.settings.get();
     const langSelect = document.getElementById('language-select');
     if (langSelect) langSelect.value = settings.language || 'ar';
+    syncLanguageControls(settings.language || 'ar');
     
     const currencySelect = document.getElementById('currency-select');
     if (currencySelect) currencySelect.value = settings.currency || 'SYP';
@@ -866,10 +906,14 @@ async function loadSettings() {
     if (dbPath) dbPath.textContent = await window.api.app.getDatabasePath();
 }
 
-async function changeLanguage() {
-    const lang = document.getElementById('language-select').value;
+async function changeLanguage(langOrEvent) {
+    const lang = typeof langOrEvent === 'string'
+        ? langOrEvent
+        : document.getElementById('language-select')?.value || 'ar';
     await window.api.settings.setLanguage(lang);
+    currentLanguage = lang;
     await loadLanguage();
+    syncLanguageControls(lang);
     showToast('نجاح', 'تم تغيير اللغة');
 }
 

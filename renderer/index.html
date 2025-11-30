@@ -29,19 +29,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-module="deals">
                         <span class="nav-icon">🤝</span>
-                        <span data-i18n="nav.deals">الصفقات</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="inventory">
-                        <span class="nav-icon">📦</span>
-                        <span data-i18n="nav.inventory">المخزون</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="suppliers">
-                        <span class="nav-icon">🏭</span>
-                        <span data-i18n="nav.suppliers">الموردين</span>
+                        <span data-i18n="nav.deals">الصفقات والوساطة</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -51,15 +39,45 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-module="email">
-                        <span class="nav-icon">✉️</span>
-                        <span data-i18n="nav.emailCenter">مركز البريد</span>
+                    <a class="nav-link" href="#" data-module="products">
+                        <span class="nav-icon">🛒</span>
+                        <span data-i18n="nav.products">المنتجات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="logistics">
+                        <span class="nav-icon">🚚</span>
+                        <span data-i18n="nav.logistics">المخزون واللوجستيات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="tasks">
+                        <span class="nav-icon">✅</span>
+                        <span data-i18n="nav.tasks">المهام</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-module="settings">
                         <span class="nav-icon">⚙️</span>
                         <span data-i18n="nav.settings">الإعدادات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="about">
+                        <span class="nav-icon">ℹ️</span>
+                        <span data-i18n="nav.about">حول</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="suppliers">
+                        <span class="nav-icon">🏭</span>
+                        <span data-i18n="nav.suppliers">الموردين</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-module="email">
+                        <span class="nav-icon">✉️</span>
+                        <span data-i18n="nav.emailCenter">مركز البريد</span>
                     </a>
                 </li>
             </ul>
@@ -76,6 +94,26 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <header class="app-topbar">
+                <div>
+                    <p class="text-muted mb-1" data-i18n="app.subtitle">منصة الأعمال المتكاملة لإدارة تجارة المكسرات</p>
+                    <h1 class="h4 mb-0" data-i18n="app.title">FancyFoods Manager</h1>
+                </div>
+                <div class="topbar-actions">
+                    <div class="language-toggle" id="language-toggle">
+                        <button class="btn btn-sm btn-outline-primary active" data-lang="ar">عربي</button>
+                        <button class="btn btn-sm btn-outline-primary" data-lang="en">EN</button>
+                    </div>
+                    <div class="quick-links">
+                        <button class="btn btn-outline-secondary btn-sm" data-module="tasks">
+                            <span class="me-1">✅</span><span data-i18n="nav.tasks">المهام</span>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" data-module="settings">
+                            <span class="me-1">⚙️</span><span data-i18n="nav.settings">الإعدادات</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
             <!-- Dashboard Module -->
             <section id="module-dashboard" class="module-section active">
                 <div class="module-header">
@@ -132,10 +170,62 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <div class="card mb-4 h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>🧭 <span data-i18n="dashboard.quickOverview">نظرة عامة سريعة</span></h5>
+                                    <button class="btn btn-sm btn-outline-primary" data-module="tasks">
+                                        <span class="me-1">✅</span><span data-i18n="nav.tasks">المهام</span>
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted" data-i18n="dashboard.quickSummary">
+                                        تتبع العمل اليومي من لوحة التحكم الرئيسية، ثم انتقل إلى قسم المهام لتفاصيل قوائم اليوم.
+                                    </p>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span data-i18n="dashboard.summary.tasks">المهام المفتوحة</span>
+                                            <span id="summary-open-tasks" class="badge bg-primary rounded-pill">0</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span data-i18n="dashboard.summary.lowStock">تنبيهات المخزون</span>
+                                            <span id="summary-low-stock" class="badge bg-warning rounded-pill">0</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span data-i18n="dashboard.summary.pendingDeals">الصفقات المعلقة</span>
+                                            <span id="summary-open-deals" class="badge bg-info rounded-pill">0</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🤝 <span data-i18n="dashboard.openBrokerDeals">صفقات الوساطة المفتوحة</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="open-deals-list" class="list-group"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks Module -->
+            <section id="module-tasks" class="module-section">
+                <div class="module-header">
+                    <h1>✅ <span data-i18n="tasks.title">المهام اليومية</span></h1>
+                    <p class="text-muted mb-0" data-i18n="tasks.subtitle">خطوات العمل اليومية وقائمة المهام المتجددة</p>
+                </div>
+                <div class="module-body">
+                    <div class="row">
+                        <div class="col-md-6">
                             <!-- Todo List Card -->
                             <div class="card mb-4">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5>📋 <span data-i18n="todoList.title">قائمة المهام</span></h5>
+                                    <span class="badge bg-primary" id="tasks-count">0</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="input-group mb-3">
@@ -145,11 +235,12 @@
                                     <div id="todo-list" class="list-group"></div>
                                 </div>
                             </div>
-                            
+                        </div>
+                        <div class="col-md-6">
                             <!-- Daily Checklist Card -->
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>✅ <span data-i18n="dashboard.dailyChecklist">قائمة المهام اليومية</span></h5>
+                                    <h5>🗂️ <span data-i18n="dashboard.dailyChecklist">قائمة المهام اليومية</span></h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="checklist" id="daily-checklist">
@@ -174,16 +265,6 @@
                                             <label for="check5">الخطوة 5: التواصل مع التجار</label>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5>🤝 <span data-i18n="dashboard.openBrokerDeals">صفقات الوساطة المفتوحة</span></h5>
-                                </div>
-                                <div class="card-body">
-                                    <div id="open-deals-list" class="list-group"></div>
                                 </div>
                             </div>
                         </div>
@@ -234,10 +315,10 @@
                 </div>
             </section>
 
-            <!-- Inventory Module -->
-            <section id="module-inventory" class="module-section">
+            <!-- Products Module -->
+            <section id="module-products" class="module-section">
                 <div class="module-header">
-                    <h1>📦 <span data-i18n="inventory.title">إدارة المخزون</span></h1>
+                    <h1>🛒 <span data-i18n="products.title">إدارة المنتجات</span></h1>
                     <button class="btn btn-primary" id="btn-add-product"><span data-i18n="inventory.addProduct">+ إضافة منتج</span></button>
                 </div>
                 <div class="module-body">
@@ -450,6 +531,7 @@
                                     <select class="form-select" id="currency-select">
                                         <option value="SYP" selected>ليرة سورية (ل.س)</option>
                                         <option value="USD">دولار أمريكي ($)</option>
+                                        <option value="EUR">يورو (€)</option>
                                     </select>
                                 </div>
                             </div>
@@ -494,6 +576,40 @@
                                 </div>
                                 <div class="card-body">
                                     <p class="text-muted small mb-0" id="database-path"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Module -->
+            <section id="module-about" class="module-section">
+                <div class="module-header">
+                    <h1>ℹ️ <span data-i18n="about.title">حول التطبيق</span></h1>
+                    <p class="text-muted mb-0" data-i18n="about.subtitle">معلومات الإصدار، الدعم، واتجاه الواجهة</p>
+                </div>
+                <div class="module-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🏷️ <span data-i18n="about.version">إصدار التطبيق</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2"><strong data-i18n="about.currentVersion">الإصدار الحالي:</strong> <span id="about-version">-</span></p>
+                                    <p class="text-muted small mb-0" data-i18n="about.runtime">يتم عرض نفس المعلومات في وضع التطوير والإنتاج لضمان اتساق المراجعة.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>🌐 <span data-i18n="about.languageDirection">اللغة واتجاه الواجهة</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2" data-i18n="about.languageHelp">يمكنك التبديل فوراً بين العربية والإنجليزية من أي شاشة، مع حفظ الاختيار تلقائياً.</p>
+                                    <p class="text-muted small" data-i18n="about.persistent">سيتم تذكر اختيارك بعد إعادة تشغيل التطبيق لضمان تجربة متسقة في النسخة المنصبة.</p>
                                 </div>
                             </div>
                         </div>
